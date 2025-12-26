@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PentaDosen - Platform Pengelolaan Penelitian</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: {
+                50: '#f0f4ff',
+                100: '#e1e7fe',
+                200: '#c7d2fe',
+                300: '#a5b4fc',
+                400: '#818cf8',
+                500: '#6366f1',
+                600: '#4f46e5', // Academic Indigo
+                700: '#4338ca',
+                800: '#3730a3',
+                900: '#312e81',
+                950: '#1e1b4b',
+              },
+            },
+            animation: {
+              'cinematic-in': 'cinematicIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'fade-in': 'fadeIn 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slide-up': 'slideUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            },
+            keyframes: {
+              cinematicIn: {
+                '0%': { opacity: '0', transform: 'translateY(40px) scale(0.98)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Smooth global theme transitions */
+      html.dark, html.dark *,
+      html:not(.dark), html:not(.dark) * {
+        transition-property: background-color, border-color, color, fill, stroke, box-shadow, outline-color;
+        transition-duration: 400ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Premium Scroll Reveal Logic */
+      .reveal-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+      }
+      .reveal-on-scroll.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      /* Cinematic Variant */
+      .reveal-cinematic {
+        opacity: 0;
+        transform: translateY(40px) scale(0.98);
+        transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+      }
+      .reveal-cinematic.is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      
+      /* Stagger Delays */
+      .delay-100 { transition-delay: 100ms; }
+      .delay-200 { transition-delay: 200ms; }
+      .delay-300 { transition-delay: 300ms; }
+      .delay-400 { transition-delay: 400ms; }
+      .delay-500 { transition-delay: 500ms; }
+      .delay-600 { transition-delay: 600ms; }
+      .delay-700 { transition-delay: 700ms; }
+      .delay-800 { transition-delay: 800ms; }
+
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        scroll-behavior: smooth;
+      }
+      
+      /* Active state for auto-animating hero */
+      .animate-on-load {
+        opacity: 0;
+      }
+      .loaded .animate-on-load {
+        opacity: 1;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-white text-slate-900 antialiased overflow-x-hidden">
+    <div id="root"></div>
+    <script>
+      // Global reveal-on-scroll Intersection Observer
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            // Unobserve to trigger only once for premium "one-time" entrance feel
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      window.initReveal = () => {
+        const elements = document.querySelectorAll('.reveal-on-scroll, .reveal-cinematic');
+        elements.forEach(el => observer.observe(el));
+        document.body.classList.add('loaded');
+      };
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
