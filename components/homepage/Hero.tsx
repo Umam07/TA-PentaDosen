@@ -1,7 +1,29 @@
 import React from 'react';
 import { ArrowRight, PlayCircle, Sparkles } from 'lucide-react';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  onNavigate: (view: 'home' | 'login' | 'register' | 'forgot-password') => void;
+}
+
+export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+  
+  // Fungsi untuk scroll halus ke bagian video
+  const scrollToDemo = () => {
+    const element = document.getElementById('video-demo');
+    if (element) {
+      const offset = 100; // Menyesuaikan jarak agar tidak tertutup navbar
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <section className="relative pt-32 pb-20 md:pt-52 md:pb-32 overflow-hidden bg-white dark:bg-black">
       {/* Background Decor */}
@@ -33,19 +55,28 @@ export const Hero: React.FC = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 opacity-0 animate-slide-up [animation-delay:650ms] [animation-fill-mode:forwards]">
-          <button className="group px-10 py-5 bg-primary-600 hover:bg-primary-700 dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-white rounded-2xl font-bold text-lg transition-all shadow-2xl shadow-primary-500/40 dark:shadow-white/5 flex items-center space-x-3 active:scale-[0.97] hover:-translate-y-1">
+          {/* Button navigasi ke Login */}
+          <button 
+            onClick={() => onNavigate('login')}
+            className="group px-10 py-5 bg-primary-600 hover:bg-primary-700 dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-white rounded-2xl font-bold text-lg transition-all shadow-2xl shadow-primary-500/40 dark:shadow-white/5 flex items-center space-x-3 active:scale-[0.97] hover:-translate-y-1"
+          >
             <span>Mulai Sekarang</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
-          <button className="group px-10 py-5 bg-white dark:bg-neutral-900/50 border border-slate-200 dark:border-white/5 text-slate-900 dark:text-white rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-neutral-900 transition-all flex items-center space-x-3 active:scale-[0.97] hover:-translate-y-1">
+
+          {/* Button scroll ke Video Demo */}
+          <button 
+            onClick={scrollToDemo}
+            className="group px-10 py-5 bg-white dark:bg-neutral-900/50 border border-slate-200 dark:border-white/5 text-slate-900 dark:text-white rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-neutral-900 transition-all flex items-center space-x-3 active:scale-[0.97] hover:-translate-y-1"
+          >
             <PlayCircle className="w-5 h-5 text-primary-600" />
             <span>Lihat Demo</span>
           </button>
         </div>
       </div>
 
-      {/* Product Showcase - Cinematic Container */}
-      <div className="mt-32 relative max-w-6xl mx-auto px-4 opacity-0 animate-cinematic-in [animation-delay:900ms] [animation-fill-mode:forwards]">
+      {/* Product Showcase - Ditambahkan ID "video-demo" di sini */}
+      <div id="video-demo" className="mt-32 relative max-w-6xl mx-auto px-4 opacity-0 animate-cinematic-in [animation-delay:900ms] [animation-fill-mode:forwards]">
         <div className="relative bg-white dark:bg-neutral-900/50 rounded-[3.5rem] p-4 shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group overflow-hidden transition-all duration-1000">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
           
@@ -58,7 +89,7 @@ export const Hero: React.FC = () => {
                  <div className="w-3 h-3 rounded-full bg-[#28C840]"></div>
                </div>
                <div className="mx-auto bg-white/50 dark:bg-black/50 px-4 py-1 rounded-md text-[10px] text-slate-400 font-medium tracking-tight border dark:border-white/5">
-                 pentadosen.fti.yarsi.ac.id
+                  https://pentadosen.vercel.app/
                </div>
              </div>
              

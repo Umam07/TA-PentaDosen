@@ -59,7 +59,8 @@ const AppContent: React.FC = () => {
         {view === 'home' && (
           <div className="scroll-smooth">
             <section id="beranda">
-              <Hero />
+              {/* Fix: Pass the navigateTo function as onNavigate prop to Hero component */}
+              <Hero onNavigate={navigateTo} />
             </section>
             <Features />
             <Workflow />
