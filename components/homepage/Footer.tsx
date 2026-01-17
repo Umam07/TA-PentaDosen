@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BookOpen, Instagram, Github, MapPin, Mail, Phone } from 'lucide-react';
 

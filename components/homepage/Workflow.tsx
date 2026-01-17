@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { UploadCloud, CheckCircle2, PlayCircle, Archive } from 'lucide-react';
 
 export const Workflow: React.FC = () => {
@@ -26,12 +27,13 @@ export const Workflow: React.FC = () => {
     },
   ];
 
-  // Varians untuk line connector (animasi garis memanjang)
-  const lineVariants = {
+  // Varians untuk line connector (animasi garis memanjang dari codingan lama)
+  // Fix: Cast ease array to any to bypass strict bezier coordinate validation
+  const lineVariants: Variants = {
     hidden: { scaleX: 0, originX: 0 },
     visible: { 
       scaleX: 1, 
-      transition: { duration: 1.5, ease: [0.65, 0, 0.35, 1], delay: 0.8 } 
+      transition: { duration: 1.5, ease: [0.65, 0, 0.35, 1] as any, delay: 0.8 } 
     }
   };
 
@@ -42,14 +44,15 @@ export const Workflow: React.FC = () => {
     }
   };
 
-  const itemVariants = {
+  // Fix: Added explicit 'as const' to transition type
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
       transition: { 
-        type: "spring", 
+        type: "spring" as const, 
         stiffness: 100, 
         damping: 20 
       }
@@ -57,10 +60,10 @@ export const Workflow: React.FC = () => {
   };
 
   return (
-    <section id="alur" className="py-32 bg-slate-50 dark:bg-black/20 overflow-hidden">
+    <section id="alur" className="py-32 bg-slate-50 dark:bg-neutral-900/10 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header dengan Motion */}
+        {/* Header Section dengan Motion */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -80,7 +83,7 @@ export const Workflow: React.FC = () => {
         </motion.div>
 
         <div className="relative">
-          {/* Connector Line (Desktop) - Teranimasi */}
+          {/* Connector Line (Desktop) - Teranimasi dari Codingan Lama */}
           <motion.div 
             variants={lineVariants}
             initial="hidden"
@@ -89,7 +92,7 @@ export const Workflow: React.FC = () => {
             className="hidden lg:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-primary-500/10 via-primary-500/40 to-primary-500/10 dark:via-white/20"
           />
 
-          {/* Grid Container */}
+          {/* Grid Container dengan Stagger Effect */}
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -103,14 +106,14 @@ export const Workflow: React.FC = () => {
                 variants={itemVariants}
                 className="relative flex flex-col items-center group"
               >
-                {/* Icon Circle dengan Hover Effect */}
+                {/* Icon Circle dengan Hover Effect Lama */}
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 2 }}
                   className="w-24 h-24 bg-white dark:bg-black rounded-[2.5rem] flex items-center justify-center text-primary-600 dark:text-primary-400 mb-10 shadow-xl shadow-slate-200/50 dark:shadow-none relative z-10 transition-all duration-500 group-hover:bg-primary-600 group-hover:text-white border border-slate-100 dark:border-white/5"
                 >
                   {step.icon}
                   
-                  {/* Badge Number */}
+                  {/* Badge Number dengan Animasi Putar */}
                   <div className="absolute -top-3 -right-3 w-10 h-10 bg-slate-900 dark:bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-bold border-4 border-slate-50 dark:border-black transition-all duration-500 group-hover:rotate-[360deg] group-hover:scale-110">
                     {idx + 1}
                   </div>

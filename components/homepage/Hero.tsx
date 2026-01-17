@@ -1,15 +1,7 @@
-import React from "react";
-import { ArrowRight, PlayCircle, Sparkles } from "lucide-react";
+import React from 'react';
+import { ArrowRight, PlayCircle, Sparkles } from 'lucide-react';
 
 export const Hero: React.FC = () => {
-  // Fungsi untuk scroll halus ke bagian demo
-  const scrollToDemo = () => {
-    const demoSection = document.getElementById("demo-video");
-    if (demoSection) {
-      demoSection.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
   return (
     <section className="relative pt-32 pb-20 md:pt-52 md:pb-32 overflow-hidden bg-white dark:bg-black">
       {/* Background Decor */}
@@ -28,18 +20,16 @@ export const Hero: React.FC = () => {
             V2.1 · Penta Dosen
           </span>
         </div>
-
+        
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-8 leading-[0.95] md:leading-[0.9] opacity-0 animate-cinematic-in [animation-delay:150ms] [animation-fill-mode:forwards]">
           Elevasi Riset <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-500 dark:from-primary-400 dark:to-blue-300">
             Tanpa Batas.
           </span>
         </h1>
-
+        
         <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-500 dark:text-neutral-400 mb-12 leading-relaxed font-medium opacity-0 animate-slide-up [animation-delay:400ms] [animation-fill-mode:forwards]">
-          Transformasi digital pengelolaan penelitian untuk Dosen FTI. 
-          <br />
-          Efisien, terstruktur, dan mendukung proses publikasi ilmiah.
+          Transformasi digital pengelolaan penelitian untuk Dosen FTI. Efisien, terstruktur, dan siap mendukung publikasi kelas dunia.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 opacity-0 animate-slide-up [animation-delay:650ms] [animation-fill-mode:forwards]">
@@ -47,12 +37,7 @@ export const Hero: React.FC = () => {
             <span>Mulai Sekarang</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
-          
-          {/* ACTION: Tombol Lihat Demo sekarang memiliki onClick */}
-          <button 
-            onClick={scrollToDemo}
-            className="group px-10 py-5 bg-white dark:bg-neutral-900/50 border border-slate-200 dark:border-white/5 text-slate-900 dark:text-white rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-neutral-900 transition-all flex items-center space-x-3 active:scale-[0.97] hover:-translate-y-1"
-          >
+          <button className="group px-10 py-5 bg-white dark:bg-neutral-900/50 border border-slate-200 dark:border-white/5 text-slate-900 dark:text-white rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-neutral-900 transition-all flex items-center space-x-3 active:scale-[0.97] hover:-translate-y-1">
             <PlayCircle className="w-5 h-5 text-primary-600" />
             <span>Lihat Demo</span>
           </button>
@@ -60,38 +45,34 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Product Showcase - Cinematic Container */}
-      {/* Menambahkan ID demo-video di sini agar bisa di-scroll */}
-      <div 
-        id="demo-video"
-        className="mt-32 relative max-w-6xl mx-auto px-4 opacity-0 animate-cinematic-in [animation-delay:900ms] [animation-fill-mode:forwards]"
-      >
+      <div className="mt-32 relative max-w-6xl mx-auto px-4 opacity-0 animate-cinematic-in [animation-delay:900ms] [animation-fill-mode:forwards]">
         <div className="relative bg-white dark:bg-neutral-900/50 rounded-[3.5rem] p-4 shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group overflow-hidden transition-all duration-1000">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-
+          
           <div className="aspect-[16/9] bg-slate-50 dark:bg-black rounded-[2.8rem] relative overflow-hidden border dark:border-white/10">
             {/* Browser Header Decor */}
-            <div className="absolute top-0 left-0 right-0 h-10 bg-slate-100/50 dark:bg-neutral-800/50 backdrop-blur-md flex items-center px-6 z-10 border-b dark:border-white/5">
-              <div className="flex space-x-2">
-                <div className="w-3 h-3 rounded-full bg-[#FF5F57]"></div>
-                <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-                <div className="w-3 h-3 rounded-full bg-[#28C840]"></div>
-              </div>
-              <div className="mx-auto bg-white/50 dark:bg-black/50 px-4 py-1 rounded-md text-[10px] text-slate-400 font-medium tracking-tight border dark:border-white/5">
-                pentadosen.fti.yarsi.ac.id
-              </div>
-            </div>
-
-            {/* YouTube Iframe */}
-            <div className="w-full h-full pt-10">
-              <iframe
+             <div className="absolute top-0 left-0 right-0 h-10 bg-slate-100/50 dark:bg-neutral-800/50 backdrop-blur-md flex items-center px-6 z-10 border-b dark:border-white/5">
+               <div className="flex space-x-2">
+                 <div className="w-3 h-3 rounded-full bg-[#FF5F57]"></div>
+                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                 <div className="w-3 h-3 rounded-full bg-[#28C840]"></div>
+               </div>
+               <div className="mx-auto bg-white/50 dark:bg-black/50 px-4 py-1 rounded-md text-[10px] text-slate-400 font-medium tracking-tight border dark:border-white/5">
+                 pentadosen.fti.yarsi.ac.id
+               </div>
+             </div>
+             
+             {/* YouTube Iframe */}
+             <div className="w-full h-full pt-10">
+               <iframe 
                 className="w-full h-full"
-                src="https://www.youtube.com/embed/g6VjrAXKF9w?rel=0&showinfo=0&modestbranding=1"
+                src="https://www.youtube.com/embed/g6VjrAXKF9w?rel=0&showinfo=0&modestbranding=1" 
                 title="PentaDosen Product Demo"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                 allowFullScreen
-              ></iframe>
-            </div>
+               ></iframe>
+             </div>
           </div>
         </div>
       </div>

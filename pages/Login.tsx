@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BookOpen, User, Lock, ArrowRight, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 
@@ -6,16 +5,20 @@ interface LoginProps {
   onBack: () => void;
   onRegister: () => void;
   onForgotPassword: () => void;
+  onSuccess?: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onBack, onRegister, onForgotPassword }) => {
+export const Login: React.FC<LoginProps> = ({ onBack, onRegister, onForgotPassword, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000); // Simulate login
+    setTimeout(() => {
+      setIsLoading(false);
+      if (onSuccess) onSuccess();
+    }, 1500); // Simulate login
   };
 
   const togglePasswordVisibility = () => {
@@ -72,19 +75,10 @@ export const Login: React.FC<LoginProps> = ({ onBack, onRegister, onForgotPasswo
             </div>
 
             {/* Password Field */}
-            <div className="space-y-2 opacity-0 animate-slide-up [animation-delay:300ms] [animation-fill-mode:forwards]">
-              <div className="flex items-center justify-between ml-1">
-                <label className="text-xs font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest">
-                  Password
-                </label>
-                <button 
-                  type="button"
-                  onClick={onForgotPassword}
-                  className="text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline uppercase tracking-wider transition-all duration-300"
-                >
-                  Lupa Password?
-                </button>
-              </div>
+            <div className="space-y-1.5 opacity-0 animate-slide-up [animation-delay:300ms] [animation-fill-mode:forwards]">
+              <label className="text-xs font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest ml-1">
+                Password
+              </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary-600 transition-colors">
                   <Lock className="w-5 h-5" />
@@ -108,10 +102,19 @@ export const Login: React.FC<LoginProps> = ({ onBack, onRegister, onForgotPasswo
                   )}
                 </button>
               </div>
+              <div className="flex justify-end">
+                <button 
+                  type="button"
+                  onClick={onForgotPassword}
+                  className="text-[11px] font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-300 px-1 py-1"
+                >
+                  Lupa Password?
+                </button>
+              </div>
             </div>
 
             {/* Sign In Button */}
-            <div className="pt-4 opacity-0 animate-slide-up [animation-delay:400ms] [animation-fill-mode:forwards]">
+            <div className="pt-2 opacity-0 animate-slide-up [animation-delay:400ms] [animation-fill-mode:forwards]">
               <button 
                 type="submit"
                 disabled={isLoading}

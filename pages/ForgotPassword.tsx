@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BookOpen, Mail, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 
@@ -58,7 +57,6 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBackToLogin })
           
           {!isSubmitted ? (
             <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Logo Area */}
               <div className="flex flex-col items-center mb-10">
                 <div className="w-16 h-16 bg-primary-600 rounded-[1.25rem] flex items-center justify-center shadow-2xl shadow-primary-500/30 mb-6 transition-transform hover:scale-105">
                   <BookOpen className="text-white w-8 h-8" />
@@ -72,7 +70,6 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBackToLogin })
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6 text-left">
-                {/* Email Field */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest ml-1">
                     Alamat Email
@@ -96,7 +93,6 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBackToLogin })
                   {error && <p className="text-[10px] font-bold text-red-500 ml-1 mt-1">{error}</p>}
                 </div>
 
-                {/* Reset Button */}
                 <div className="pt-4">
                   <button 
                     type="submit"
@@ -136,7 +132,6 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBackToLogin })
             </div>
           )}
 
-          {/* Bottom Footer Helper Link */}
           {!isSubmitted && (
             <div className="mt-8">
               <button onClick={onBackToLogin} className="text-sm font-bold text-slate-400 dark:text-neutral-600 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">

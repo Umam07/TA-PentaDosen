@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { FileText, Database, CreditCard, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
 
 export const Features: React.FC = () => {
@@ -9,40 +10,46 @@ export const Features: React.FC = () => {
       description: 'Pantau status proposal secara real-time. Sistem notifikasi cerdas memastikan Anda tidak melewatkan tenggat waktu penting.',
       icon: <FileText className="w-7 h-7 text-primary-600 dark:text-primary-400" />,
       color: 'bg-primary-500/10',
+      borderColor: 'group-hover:border-primary-500/30'
     },
     {
       title: 'Dokumentasi Terpusat',
       description: 'Seluruh luaran penelitian tersimpan aman di cloud. Akses kapan saja, di mana saja dengan enkripsi tingkat tinggi.',
       icon: <Database className="w-7 h-7 text-primary-600 dark:text-primary-400" />,
       color: 'bg-primary-500/10',
+      borderColor: 'group-hover:border-primary-500/30'
     },
     {
       title: 'Pendanaan Transparan',
       description: 'Kelola anggaran penelitian dengan akurasi maksimal. Laporan pencairan dana otomatis yang siap audit.',
       icon: <CreditCard className="w-7 h-7 text-primary-600 dark:text-primary-400" />,
       color: 'bg-primary-500/10',
+      borderColor: 'group-hover:border-primary-500/30'
     },
     {
       title: 'Keamanan Data',
       description: 'Privasi intelektual adalah prioritas kami. Data Anda dilindungi oleh protokol keamanan terbaru.',
       icon: <ShieldCheck className="w-7 h-7 text-primary-600 dark:text-primary-400" />,
       color: 'bg-primary-500/10',
+      borderColor: 'group-hover:border-primary-500/30'
     },
     {
       title: 'Kinerja Cepat',
-      description: 'Antarmuka yang responsif dan optimasi database kelas atas memberikan pengalaman pengguna tanpa hambatan.',
+      description: 'Antarmuka yang responsif and optimasi database kelas atas memberikan pengalaman pengguna tanpa hambatan.',
       icon: <Zap className="w-7 h-7 text-primary-600 dark:text-primary-400" />,
       color: 'bg-primary-500/10',
+      borderColor: 'group-hover:border-primary-500/30'
     },
     {
       title: 'Analitik Mendalam',
       description: 'Visualisasi data riset yang informatif untuk membantu pengambilan keputusan strategis departemen.',
       icon: <BarChart3 className="w-7 h-7 text-primary-600 dark:text-primary-400" />,
       color: 'bg-primary-500/10',
+      borderColor: 'group-hover:border-primary-500/30'
     }
   ];
 
-  // Varians untuk Container (Efek muncul satu per satu)
+  // Varians untuk Container dari codingan lama
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -54,15 +61,16 @@ export const Features: React.FC = () => {
     }
   };
 
-  // Varians untuk setiap kartu (Fade in + Slide up + Blur)
-  const itemVariants = {
+  // Varians untuk setiap kartu dari codingan lama
+  // Fix: Added explicit 'as const' to transition type to satisfy Variants type definition
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30, filter: 'blur(8px)' },
     visible: { 
       opacity: 1, 
       y: 0, 
       filter: 'blur(0px)',
       transition: { 
-        type: "spring", 
+        type: "spring" as const, 
         stiffness: 80, 
         damping: 15 
       }
@@ -73,7 +81,7 @@ export const Features: React.FC = () => {
     <section id="fitur" className="py-32 relative overflow-hidden bg-white dark:bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Header Section */}
+        {/* Header Section dengan Animasi Lama */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -93,7 +101,7 @@ export const Features: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Grid Animasi */}
+        {/* Grid Animasi menggunakan ContainerVariants */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -109,7 +117,7 @@ export const Features: React.FC = () => {
                 y: -12, 
                 transition: { type: "spring", stiffness: 300, damping: 20 } 
               }}
-              className="group bg-slate-50 dark:bg-neutral-900/20 p-10 rounded-[2.5rem] border border-transparent dark:border-white/5 hover:bg-white dark:hover:bg-neutral-900/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 hover:border-primary-500/30"
+              className={`group bg-slate-50 dark:bg-neutral-900/20 p-10 rounded-[2.5rem] border border-transparent dark:border-white/5 hover:bg-white dark:hover:bg-neutral-900/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 ${feature.borderColor}`}
             >
               {/* Icon Container */}
               <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 group-hover:brightness-110 transition-all duration-500 shadow-sm`}>
