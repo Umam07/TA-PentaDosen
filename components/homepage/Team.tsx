@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Instagram, GraduationCap, UserCircle, Users } from 'lucide-react';
@@ -13,14 +12,14 @@ interface TeamMember {
 }
 
 const teamData: Record<string, TeamMember[]> = {
- DUK: [
+  DUK: [
     {
       name: 'Kiki Aimar Wicaksana',
       role: 'Cloud Engineer',
       major: 'Teknik Informatika',
       npm: '1402022030',
       image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Kiki_l5i0u9.jpg',
-      instagram: '#'
+      instagram: 'https://www.instagram.com/kim.aimarr/'
     },
     {
       name: "Muhammad Syafi'ul Umam",
@@ -28,7 +27,7 @@ const teamData: Record<string, TeamMember[]> = {
       major: 'Teknik Informatika',
       npm: '1402022048',
       image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Mamz_oz4gxx.jpg',
-      instagram: '#'
+      instagram: 'https://www.instagram.com/umammskyy/'
     },
     {
       name: 'Rafi Daniswara',
@@ -36,7 +35,7 @@ const teamData: Record<string, TeamMember[]> = {
       major: 'Teknik Informatika',
       npm: '1402022050',
       image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Denis_ohil78.jpg',
-      instagram: '#'
+      instagram: 'https://www.instagram.com/ravidnss/'
     }
   ],
   Fortuna: [
@@ -46,7 +45,7 @@ const teamData: Record<string, TeamMember[]> = {
       major: 'Teknik Informatika',
       npm: '1402022048',
       image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Mamz_oz4gxx.jpg',
-      instagram: '#'
+      instagram: 'https://www.instagram.com/umammskyy/'
     },
     {
       name: 'Rafly Eryan Azis',
@@ -54,7 +53,7 @@ const teamData: Record<string, TeamMember[]> = {
       major: 'Teknik Informatika',
       npm: '1402022051',
       image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Rafly_apu6fy.jpg',
-      instagram: '#'
+      instagram: 'https://www.instagram.com/002_rafly/'
     },
     {
       name: 'Rafi Daniswara',
@@ -62,36 +61,39 @@ const teamData: Record<string, TeamMember[]> = {
       major: 'Teknik Informatika',
       npm: '1402022050',
       image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Denis_ohil78.jpg',
-      instagram: '#'
+      instagram: 'https://www.instagram.com/ravidnss/'
     }
   ]
 };
 
 export const Team: React.FC = () => {
   const [activeTeam, setActiveTeam] = useState<'DUK' | 'Fortuna'>('DUK');
+  const [hasInView, setHasInView] = useState(false);
 
-  // Varians untuk Container (Efek muncul satu per satu)
+  // Varians untuk Container
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15 }
+      transition: { 
+        staggerChildren: 0.15,
+        delayChildren: 0.1
+      }
     },
     exit: { 
       opacity: 0, 
-      transition: { staggerChildren: 0.05, staggerDirection: -1 } 
+      y: -10,
+      transition: { duration: 0.2, staggerChildren: 0.05, staggerDirection: -1 } 
     }
   };
 
-  // Varians untuk setiap kartu
-  // Fix: Added explicit 'as const' to transition type
   const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    hidden: { opacity: 0, y: 40, scale: 0.9 },
     visible: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
-      transition: { type: "spring" as const, stiffness: 80, damping: 15 }
+      transition: { type: "spring", stiffness: 70, damping: 15 }
     },
     exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
   };
@@ -100,8 +102,12 @@ export const Team: React.FC = () => {
     <section id="tentang" className="py-24 md:py-32 bg-white dark:bg-black overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header Section dengan Motion */}
-        <div className="text-center mb-16">
+        {/* Header Section */}
+        <motion.div 
+          className="text-center mb-16"
+          onViewportEnter={() => setHasInView(true)}
+          viewport={{ once: true, amount: 0.3 }}
+        >
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -125,7 +131,7 @@ export const Team: React.FC = () => {
             <span className="text-slate-400 dark:text-neutral-600">Keunggulan Riset.</span>
           </motion.h2>
           
-          {/* Team Selector - Animated Pill */}
+          {/* Team Selector */}
           <div className="flex justify-center mt-12">
             <div className="inline-flex p-1.5 bg-slate-100 dark:bg-neutral-900/50 backdrop-blur-md rounded-[2rem] border border-slate-200 dark:border-white/5 relative">
               {(['DUK', 'Fortuna'] as const).map((team) => (
@@ -148,91 +154,88 @@ export const Team: React.FC = () => {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Team Grid dengan AnimatePresence */}
+        {/* Team Grid */}
         <AnimatePresence mode="wait">
-          <motion.div 
-            key={activeTeam}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12"
-          >
-            {teamData[activeTeam].map((member, idx) => (
-              <motion.div 
-                key={`${activeTeam}-${member.npm}`} 
-                variants={cardVariants}
-                className="group relative flex flex-col items-center"
-              >
-                {/* Member Image - Modern Soft-Rounded Rectangle */}
-                <div className="relative mb-10 w-full max-w-[280px] md:max-w-xs">
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="aspect-[4/5] rounded-[2.5rem] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000 shadow-2xl border-[6px] border-white dark:border-neutral-900 group-hover:border-primary-600/20"
-                  >
-                    <motion.img 
-                      src={member.image} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.8 }}
-                    />
-                  </motion.div>
-                  
-                  {/* Floating Decoration Icon */}
-                  <motion.div 
-                    initial={{ scale: 0, x: 20 }}
-                    whileInView={{ scale: 1, x: 0 }}
-                    className="absolute bottom-2 right-2 w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-500"
-                  >
-                    <UserCircle className="w-6 h-6" />
-                  </motion.div>
-                </div>
-
-                {/* Member Info */}
-                <div className="text-center space-y-4 max-w-[280px]">
-                  <div>
-                    <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-primary-600 transition-colors">
-                      {member.name}
-                    </h4>
-                    <p className="text-sm font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest mt-1">
-                      {member.role}
-                    </p>
-                  </div>
-                  
-                  <div className="pt-5 space-y-2.5 border-t border-slate-100 dark:border-white/5">
-                    <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-neutral-400">
-                      <GraduationCap className="w-4 h-4 shrink-0" />
-                      <span className="text-sm font-semibold leading-none">{member.major}</span>
-                    </div>
-                    <div className="inline-block px-3 py-1 bg-slate-50 dark:bg-white/5 rounded-md">
-                      <span className="text-[11px] font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-[0.15em]">
-                        {member.npm.includes('NIDN') ? '' : 'NPM: '}{member.npm}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Social Icon */}
-                  <div className="pt-6">
-                    <motion.a 
-                      whileHover={{ y: -5, scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      href={member.instagram} 
-                      className="inline-flex w-12 h-12 items-center justify-center rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-primary-600 hover:border-primary-600/50 hover:shadow-2xl transition-all"
+          {hasInView && (
+            <motion.div 
+              key={activeTeam}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12"
+            >
+              {teamData[activeTeam].map((member) => (
+                <motion.div 
+                  key={`${activeTeam}-${member.npm}`} 
+                  variants={cardVariants}
+                  className="group relative flex flex-col items-center"
+                >
+                  {/* Foto Member */}
+                  <div className="relative mb-10 w-full max-w-[280px] md:max-w-xs">
+                    <motion.div 
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      className="aspect-[4/5] rounded-[2.5rem] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000 shadow-2xl border-[6px] border-white dark:border-neutral-900 group-hover:border-primary-600/20"
                     >
-                      <Instagram className="w-6 h-6" />
-                    </motion.a>
+                      <motion.img 
+                        src={member.image} 
+                        alt={member.name} 
+                        className="w-full h-full object-cover"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.8 }}
+                      />
+                    </motion.div>
+                    
+                    <div className="absolute bottom-2 right-2 w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-500">
+                      <UserCircle className="w-6 h-6" />
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+
+                  {/* Info Member */}
+                  <div className="text-center space-y-4 max-w-[280px]">
+                    <div>
+                      <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-primary-600 transition-colors">
+                        {member.name}
+                      </h4>
+                      <p className="text-sm font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest mt-1">
+                        {member.role}
+                      </p>
+                    </div>
+                    
+                    <div className="pt-5 space-y-2.5 border-t border-slate-100 dark:border-white/5">
+                      <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-neutral-400">
+                        <span className="text-sm font-semibold leading-none">{member.major}</span>
+                      </div>
+                      <div className="inline-block px-3 py-1 bg-slate-50 dark:bg-white/5 rounded-md">
+                        <span className="text-[11px] font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-[0.15em]">
+                          NPM: {member.npm}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-6">
+                      <motion.a 
+                        whileHover={{ y: -5, scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        href={member.instagram} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-12 h-12 items-center justify-center rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-primary-600 hover:border-primary-600/50 hover:shadow-2xl transition-all"
+                      >
+                        <Instagram className="w-6 h-6" />
+                      </motion.a>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </AnimatePresence>
 
-        {/* Apple-style Callout/Quote */}
+        {/* Footer Quote */}
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}

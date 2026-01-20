@@ -2,10 +2,12 @@ import React from 'react';
 import { BookOpen, Instagram, Github, MapPin, Mail, Phone } from 'lucide-react';
 
 interface FooterProps {
+  // Menambahkan currentView agar footer tahu posisi halaman saat ini
+  currentView?: string; 
   onNavigate?: (view: 'home' | 'login' | 'register' | 'forgot-password') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, currentView = 'home' }) => {
   const currentYear = new Date().getFullYear();
 
   const navLinks = [
@@ -17,27 +19,36 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   ];
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) {
+    e.preventDefault();
+
+    // Cek apakah sedang tidak di homepage
+    if (currentView !== 'home') {
       if (onNavigate) {
         onNavigate('home');
       }
-      
-      e.preventDefault();
+      // Beri sedikit delay agar komponen Home dimount dulu sebelum di-scroll
       setTimeout(() => {
         const element = document.querySelector(href);
         if (element) {
-          const offset = 80;
-          const bodyRect = document.body.getBoundingClientRect().top;
-          const elementRect = element.getBoundingClientRect().top;
-          const elementPosition = elementRect - bodyRect;
-          const offsetPosition = elementPosition - offset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
+          element.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 100);
+      }, 150);
+      return;
+    }
+
+    // Jika sudah di home, gunakan scroll kalkulasi offset agar pas di mata
+    const element = document.querySelector(href);
+    if (element) {
+      const offset = 50;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -46,14 +57,24 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
           
-          {/* Column 1: Brand & Socials */}
+          {/* Kolom 1: Brand & Socials */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="flex items-center space-x-2 group cursor-pointer" onClick={() => onNavigate?.('home')}>
-              <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
-                <BookOpen className="text-white w-5 h-5" />
+            <div 
+              className="flex items-center space-x-2 group cursor-pointer w-fit" 
+              onClick={() => {
+                if (currentView === 'home') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  onNavigate?.('home');
+                }
+              }}
+            >
+              <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
+                <BookOpen className="text-white w-6 h-6" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 PentaDosen
+                <span className="text-primary-600">.</span>
               </span>
             </div>
             <p className="text-sm text-slate-500 dark:text-neutral-400 max-w-xs leading-relaxed">
@@ -61,12 +82,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </p>
             <div className="flex items-center gap-4">
               {[
-                { icon: Instagram, href: '#' },
-                { icon: Github, href: '#' },
+                { icon: Instagram, href: 'https://www.instagram.com/fortunateams/' },
+                { icon: Github, href: 'https://github.com/Umam07/TA-PentaDosen' },
               ].map((social, idx) => (
                 <a 
                   key={idx} 
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:border-primary-600 dark:hover:text-white dark:hover:border-white transition-all transform hover:scale-110"
                 >
                   <social.icon className="w-5 h-5" />
@@ -75,7 +98,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Column 2: Quick Navigation */}
+          {/* Kolom 2: Navigasi Cepat */}
           <div className="lg:col-span-3 space-y-6">
             <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 dark:text-white">Navigasi</h4>
             <nav className="flex flex-col space-y-4">
@@ -84,16 +107,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleLinkClick(e, link.href)}
-                  className="text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-white transition-colors w-fit group flex items-center"
+                  className="text-sm font-medium text-slate-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-white transition-all w-fit group flex items-center"
                 >
-                  <span className="w-0 h-px bg-primary-600 dark:bg-white transition-all group-hover:w-3 mr-0 group-hover:mr-2"></span>
+                  <span className="w-0 h-px bg-primary-600 dark:bg-white transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
                   {link.name}
                 </a>
               ))}
             </nav>
           </div>
 
-          {/* Column 3: Contact Us */}
+          {/* Kolom 3: Kontak Kami */}
           <div className="lg:col-span-5 space-y-6">
             <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900 dark:text-white">Kontak Kami</h4>
             <div className="space-y-5">
@@ -104,7 +127,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 dark:text-neutral-600 uppercase">Alamat</p>
                   <p className="text-sm text-slate-600 dark:text-neutral-300 leading-relaxed">
-                    Menara Yarsi, Jl. Letjen Suprapto No.Kav.13, RT.10/RW.5, Cemp. Putih Tim., Kec. Cemp. Putih, Kota Jakarta Pusat
+                    Menara Yarsi, Jl. Letjen Suprapto No.Kav.13, Cemp. Putih, Jakarta Pusat
                   </p>
                 </div>
               </div>
@@ -142,7 +165,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Baris Bawah */}
         <div className="pt-10 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
             <p className="text-[11px] font-medium text-slate-400 dark:text-neutral-600 uppercase tracking-widest leading-loose">

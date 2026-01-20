@@ -4,6 +4,7 @@ import { Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
 interface NavbarProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
+  // Menambahkan currentView agar footer tahu posisi halaman saat ini
   onNavigate: (view: 'home' | 'login' | 'register' | 'forgot-password') => void;
   currentView: 'home' | 'login' | 'register' | 'forgot-password';
 }
@@ -45,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isDarkMode, toggleTheme, onNavig
     e.preventDefault();
     const element = document.querySelector(href);
     if (element) {
-      const offset = 80;
+      const offset = 50;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;

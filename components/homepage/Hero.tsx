@@ -75,7 +75,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Product Showcase - Ditambahkan ID "video-demo" di sini */}
+      {/* Product Showcase - Bagian Video */}
       <div id="video-demo" className="mt-32 relative max-w-6xl mx-auto px-4 opacity-0 animate-cinematic-in [animation-delay:900ms] [animation-fill-mode:forwards]">
         <div className="relative bg-white dark:bg-neutral-900/50 rounded-[3.5rem] p-4 shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group overflow-hidden transition-all duration-1000">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
@@ -93,11 +93,11 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                </div>
              </div>
              
-             {/* YouTube Iframe */}
+             {/* YouTube Iframe - URL BARU TELAH DIUPDATE DI SINI */}
              <div className="w-full h-full pt-10">
                <iframe 
                 className="w-full h-full"
-                src="https://www.youtube.com/embed/g6VjrAXKF9w?rel=0&showinfo=0&modestbranding=1" 
+                src="https://www.youtube.com/embed/gCMfMIjrWqE?rel=0&showinfo=0&modestbranding=1" 
                 title="PentaDosen Product Demo"
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
