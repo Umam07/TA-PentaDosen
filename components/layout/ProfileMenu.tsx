@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, LogOut } from 'lucide-react';
+import { useLayout } from './AppLayout';
 
 interface ProfileMenuProps {
   onLogout: () => void;
@@ -13,6 +14,7 @@ const USER_DATA = {
 };
 
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout, onViewProfile }) => {
+  const { profilePhoto } = useLayout();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -38,8 +40,12 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ onLogout, onViewProfil
           <p className="text-[13px] font-semibold text-slate-900 dark:text-white">{USER_DATA.name}</p>
           <p className="text-[11px] font-medium text-slate-400 dark:text-neutral-500">{USER_DATA.role}</p>
         </div>
-        <div className="w-9 h-9 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center text-xs font-bold text-slate-600 dark:text-neutral-400 border border-slate-200 dark:border-white/10 transition-colors">
-          {USER_DATA.initials}
+        <div className="w-9 h-9 bg-slate-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center text-xs font-bold text-slate-600 dark:text-neutral-400 border border-slate-200 dark:border-white/10 transition-colors overflow-hidden">
+          {profilePhoto ? (
+            <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          ) : (
+            USER_DATA.initials
+          )}
         </div>
       </button>
       

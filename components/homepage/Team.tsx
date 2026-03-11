@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Instagram, GraduationCap, UserCircle, Users } from 'lucide-react';
+import { motion, Variants } from 'framer-motion';
+import { Instagram, Users } from 'lucide-react';
 
 interface TeamMember {
   name: string;
@@ -11,66 +11,36 @@ interface TeamMember {
   instagram: string;
 }
 
-const teamData: Record<string, TeamMember[]> = {
-  DUK: [
-    {
-      name: 'Kiki Aimar Wicaksana',
-      role: 'Cloud Engineer',
-      major: 'Teknik Informatika',
-      npm: '1402022030',
-      image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Kiki_l5i0u9.jpg',
-      instagram: 'https://www.instagram.com/kim.aimarr/'
-    },
-    {
-      name: "Muhammad Syafi'ul Umam",
-      role: 'Frontend',
-      major: 'Teknik Informatika',
-      npm: '1402022048',
-      image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Mamz_oz4gxx.jpg',
-      instagram: 'https://www.instagram.com/umammskyy/'
-    },
-    {
-      name: 'Rafi Daniswara',
-      role: 'Backend',
-      major: 'Teknik Informatika',
-      npm: '1402022050',
-      image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Denis_ohil78.jpg',
-      instagram: 'https://www.instagram.com/ravidnss/'
-    }
-  ],
-  Fortuna: [
-    {
-      name: "Muhammad Syafi'ul Umam",
-      role: 'Frontend',
-      major: 'Teknik Informatika',
-      npm: '1402022048',
-      image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Mamz_oz4gxx.jpg',
-      instagram: 'https://www.instagram.com/umammskyy/'
-    },
-    {
-      name: 'Rafly Eryan Azis',
-      role: 'Backend',
-      major: 'Teknik Informatika',
-      npm: '1402022051',
-      image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Rafly_apu6fy.jpg',
-      instagram: 'https://www.instagram.com/002_rafly/'
-    },
-    {
-      name: 'Rafi Daniswara',
-      role: 'UI/UX Desainer',
-      major: 'Teknik Informatika',
-      npm: '1402022050',
-      image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Denis_ohil78.jpg',
-      instagram: 'https://www.instagram.com/ravidnss/'
-    }
-  ]
-};
+const teamData: TeamMember[] = [
+  {
+    name: 'Kiki Aimar Wicaksana',
+    role: 'Frontend',
+    major: 'Teknik Informatika',
+    npm: '1402022030',
+    image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Kiki_l5i0u9.jpg',
+    instagram: 'https://www.instagram.com/kim.aimarr/'
+  },
+  {
+    name: "Muhammad Syafi'ul Umam",
+    role: 'Frontend',
+    major: 'Teknik Informatika',
+    npm: '1402022048',
+    image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Mamz_oz4gxx.jpg',
+    instagram: 'https://www.instagram.com/umammskyy/'
+  },
+  {
+    name: 'Rafi Daniswara',
+    role: 'Backend',
+    major: 'Teknik Informatika',
+    npm: '1402022050',
+    image: 'https://res.cloudinary.com/dr57ribr5/image/upload/w_500,h_600,c_fill,q_auto,f_auto/Denis_ohil78.jpg',
+    instagram: 'https://www.instagram.com/ravidnss/'
+  }
+];
 
 export const Team: React.FC = () => {
-  const [activeTeam, setActiveTeam] = useState<'DUK' | 'Fortuna'>('DUK');
   const [hasInView, setHasInView] = useState(false);
 
-  // Varians untuk Container
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -79,32 +49,28 @@ export const Team: React.FC = () => {
         staggerChildren: 0.15,
         delayChildren: 0.1
       }
-    },
-    exit: { 
-      opacity: 0, 
-      y: -10,
-      transition: { duration: 0.2, staggerChildren: 0.05, staggerDirection: -1 } 
     }
   };
 
   const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 40, scale: 0.9 },
+    hidden: { opacity: 0, y: 40 },
     visible: { 
       opacity: 1, 
       y: 0, 
-      scale: 1,
       transition: { type: "spring", stiffness: 70, damping: 15 }
-    },
-    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+    }
   };
 
   return (
-    <section id="tentang" className="py-24 md:py-32 bg-white dark:bg-black overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="tentang" className="py-24 md:py-32 relative bg-slate-50 dark:bg-[#0A0A0A] overflow-hidden font-sans">
+      {/* Dot Pattern Background */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTQ4LCAxNjMsIDE4NCwgMC4xNSkiLz48L3N2Zz4=')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom,white,transparent)] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Header Section */}
         <motion.div 
-          className="text-center mb-16"
+          className="text-center mb-20 max-w-3xl mx-auto"
           onViewportEnter={() => setHasInView(true)}
           viewport={{ once: true, amount: 0.3 }}
         >
@@ -112,10 +78,10 @@ export const Team: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 rounded-full mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-full mb-6"
           >
-            <Users className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-            <span className="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-[0.2em]">
+            <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">
               Tim Kreator
             </span>
           </motion.div>
@@ -125,135 +91,98 @@ export const Team: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tight"
+            className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight"
           >
             Kolaborasi di Balik <br className="hidden md:block" />
-            <span className="text-slate-400 dark:text-neutral-600">Keunggulan Riset.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Keunggulan Riset.</span>
           </motion.h2>
-          
-          {/* Team Selector */}
-          <div className="flex justify-center mt-12">
-            <div className="inline-flex p-1.5 bg-slate-100 dark:bg-neutral-900/50 backdrop-blur-md rounded-[2rem] border border-slate-200 dark:border-white/5 relative">
-              {(['DUK', 'Fortuna'] as const).map((team) => (
-                <button
-                  key={team}
-                  onClick={() => setActiveTeam(team)}
-                  className={`relative z-10 px-8 py-3 rounded-[1.5rem] text-sm font-bold transition-colors duration-500 ${
-                    activeTeam === team ? 'text-slate-900 dark:text-white' : 'text-slate-500'
-                  }`}
-                >
-                  Tim {team}
-                  {activeTeam === team && (
-                    <motion.div 
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-white dark:bg-neutral-800 rounded-[1.5rem] shadow-xl -z-10"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-lg font-medium text-slate-500 dark:text-neutral-400 leading-relaxed"
+          >
+            Dikembangkan oleh mahasiswa Universitas YARSI untuk mendorong inovasi akademik.
+          </motion.p>
         </motion.div>
 
         {/* Team Grid */}
-        <AnimatePresence mode="wait">
-          {hasInView && (
-            <motion.div 
-              key={activeTeam}
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12"
-            >
-              {teamData[activeTeam].map((member) => (
-                <motion.div 
-                  key={`${activeTeam}-${member.npm}`} 
-                  variants={cardVariants}
-                  className="group relative flex flex-col items-center"
-                >
-                  {/* Foto Member */}
-                  <div className="relative mb-10 w-full max-w-[280px] md:max-w-xs">
-                    <motion.div 
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      className="aspect-[4/5] rounded-[2.5rem] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000 shadow-2xl border-[6px] border-white dark:border-neutral-900 group-hover:border-primary-600/20"
+        {hasInView && (
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {teamData.map((member, idx) => (
+              <motion.div 
+                key={idx} 
+                variants={cardVariants}
+                className="group bg-white dark:bg-neutral-900/50 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:-translate-y-2 overflow-hidden flex flex-col p-3"
+              >
+                {/* Photo Container */}
+                <div className="bg-slate-50 dark:bg-neutral-800/50 w-full aspect-[4/5] overflow-hidden relative rounded-[1.5rem]">
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-[800ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:scale-[1.03] will-change-transform"
+                  />
+                  {/* Subtle overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] pointer-events-none"></div>
+                </div>
+
+                {/* Info Container */}
+                <div className="pt-6 pb-5 px-4 flex flex-col items-center text-center flex-1 bg-white dark:bg-transparent">
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                    {member.name}
+                  </h4>
+                  <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-4">
+                    {member.role}
+                  </p>
+                  
+                  <div className="mb-6">
+                    <span className="inline-block bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-neutral-400 text-xs font-mono px-2 py-1 rounded-md">
+                      NPM: {member.npm}
+                    </span>
+                  </div>
+
+                  <div className="mt-auto pt-6 border-t border-slate-100 dark:border-white/5 w-full flex justify-center">
+                    <a 
+                      href={member.instagram} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     >
-                      <motion.img 
-                        src={member.image} 
-                        alt={member.name} 
-                        className="w-full h-full object-cover"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.8 }}
-                      />
-                    </motion.div>
-                    
-                    <div className="absolute bottom-2 right-2 w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-500">
-                      <UserCircle className="w-6 h-6" />
-                    </div>
+                      <Instagram className="w-5 h-5" />
+                    </a>
                   </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
-                  {/* Info Member */}
-                  <div className="text-center space-y-4 max-w-[280px]">
-                    <div>
-                      <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-primary-600 transition-colors">
-                        {member.name}
-                      </h4>
-                      <p className="text-sm font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest mt-1">
-                        {member.role}
-                      </p>
-                    </div>
-                    
-                    <div className="pt-5 space-y-2.5 border-t border-slate-100 dark:border-white/5">
-                      <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-neutral-400">
-                        <span className="text-sm font-semibold leading-none">{member.major}</span>
-                      </div>
-                      <div className="inline-block px-3 py-1 bg-slate-50 dark:bg-white/5 rounded-md">
-                        <span className="text-[11px] font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-[0.15em]">
-                          NPM: {member.npm}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="pt-6">
-                      <motion.a 
-                        whileHover={{ y: -5, scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        href={member.instagram} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex w-12 h-12 items-center justify-center rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 text-slate-400 hover:text-primary-600 hover:border-primary-600/50 hover:shadow-2xl transition-all"
-                      >
-                        <Instagram className="w-6 h-6" />
-                      </motion.a>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Footer Quote */}
+        {/* Footer Banner */}
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-32 relative py-14 px-8 bg-slate-900 dark:bg-neutral-900/60 rounded-[4rem] overflow-hidden text-center"
+          className="mt-24 relative py-12 px-8 bg-slate-900 dark:bg-neutral-900/80 rounded-3xl overflow-hidden text-center shadow-xl"
         >
-          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
-            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary-600 blur-[150px] rounded-full"></div>
-            <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600 blur-[130px] rounded-full"></div>
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute top-[-50%] left-[-10%] w-[60%] h-[150%] bg-indigo-600 blur-[100px] rounded-full"></div>
+            <div className="absolute bottom-[-50%] right-[-10%] w-[50%] h-[150%] bg-purple-600 blur-[100px] rounded-full"></div>
           </div>
           <div className="relative z-10">
-            <p className="text-2xl md:text-3xl font-black text-white italic tracking-tight mb-4">
+            <p className="text-2xl md:text-3xl font-extrabold text-white italic tracking-tight mb-6">
               "Fokus pada kesederhanaan, hasilkan keunggulan."
             </p>
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-8 h-[2px] bg-primary-500 rounded-full"></div>
-              <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-primary-400">PentaDosen Core Philosophy</span>
-              <div className="w-8 h-[2px] bg-primary-500 rounded-full"></div>
+            <div className="flex items-center justify-center gap-4">
+              <div className="w-12 h-px bg-slate-700"></div>
+              <span className="text-xs uppercase font-bold tracking-[0.2em] text-slate-400">PentaDosen Core Philosophy</span>
+              <div className="w-12 h-px bg-slate-700"></div>
             </div>
           </div>
         </motion.div>

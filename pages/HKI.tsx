@@ -66,6 +66,7 @@ interface HKIItem {
   hkiFile?: File;
   hkiFileName?: string;
   year: string; 
+  status: 'Lengkap' | 'Sedang Berjalan';
 }
 
 /* --- ANIMATION CONFIGS --- */
@@ -132,9 +133,36 @@ const MOCK_HKI: HKIItem[] = [
     pencipta: ['Dr. Jane Doe, M.T.', 'Rafly Eryan'],
     pemegang: ['Universitas YARSI'],
     hkiFileName: 'manuskrip_hki_final.pdf',
-    year: '2025'
+    year: '2025',
+    status: 'Lengkap'
   }
 ];
+
+const getStatusStyles = (status: HKIItem['status']) => {
+  switch (status) {
+    case 'Lengkap':
+      return 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30';
+    case 'Sedang Berjalan':
+      return 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30';
+    default:
+      return 'bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-neutral-400 border-slate-100 dark:border-white/10';
+  }
+};
+
+const generateFileName = (title: string, nidn: string, originalFile: File) => {
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}${mm}${dd}`;
+  
+  const cleanTitle = title.replace(/[/\\:*?"<>|]/g, '');
+  const cleanNidn = nidn.replace(/-/g, '');
+  const extension = originalFile.name.split('.').pop();
+  const extDot = extension ? `.${extension}` : '.pdf';
+  
+  return `${cleanTitle}_${cleanNidn}_${dateStr}${extDot}`;
+};
 
 /* --- COMPONENTS --- */
 
@@ -174,9 +202,23 @@ const DragAndDropUpload: React.FC<{
   onFileSelect: (file: File | null) => void;
   acceptedTypes?: string[];
   helperText?: string;
-}> = ({ file, existingFileName, onFileSelect, acceptedTypes = [".pdf", ".docx"], helperText = "Hanya PDF atau DOCX (Max 10MB)" }) => {
+  onError?: (msg: string) => void;
+}> = ({ file, existingFileName, onFileSelect, acceptedTypes = [".pdf"], helperText = "Hanya PDF (Max 10MB)", onError }) => {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const validateFile = (selectedFile: File) => {
+    const extension = '.' + selectedFile.name.split('.').pop()?.toLowerCase();
+    if (!acceptedTypes.includes(extension)) {
+      if (onError) onError("Hanya file format PDF yang diperbolehkan.");
+      return false;
+    }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      if (onError) onError("Ukuran file terlalu besar. Maksimal 10 MB.");
+      return false;
+    }
+    return true;
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -189,7 +231,21 @@ const DragAndDropUpload: React.FC<{
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    if (e.dataTransfer.files?.[0]) onFileSelect(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files?.[0]) {
+      const selectedFile = e.dataTransfer.files[0];
+      if (validateFile(selectedFile)) {
+        onFileSelect(selectedFile);
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const selectedFile = e.target.files[0];
+      if (validateFile(selectedFile)) {
+        onFileSelect(selectedFile);
+      }
+    }
   };
 
   return (
@@ -203,7 +259,7 @@ const DragAndDropUpload: React.FC<{
         ${isDragging ? 'border-primary-600 bg-primary-600/10 scale-[1.01]' : 'border-slate-200 dark:border-white/10 hover:border-primary-500/50 bg-slate-50/50 dark:bg-white/[0.02]'}
       `}
     >
-      <input type="file" ref={inputRef} accept={acceptedTypes.join(',')} onChange={(e) => e.target.files?.[0] && onFileSelect(e.target.files[0])} className="hidden" />
+      <input type="file" ref={inputRef} accept={acceptedTypes.join(',')} onChange={handleFileChange} className="hidden" />
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 ${(file || existingFileName) ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-800 text-slate-400'}`}>
         {(file || existingFileName) ? <Check className="w-7 h-7" /> : <Upload className="w-7 h-7" />}
       </div>
@@ -253,8 +309,45 @@ export const HKI: React.FC = () => {
   const [pemegangSearch, setPemegangSearch] = useState('');
   const [isPemegangDropdownOpen, setIsPemegangDropdownOpen] = useState(false);
 
+  const [allCities, setAllCities] = useState<string[]>([]);
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+  const [focusedCityIndex, setFocusedCityIndex] = useState(-1);
+
   const penciptaRef = useRef<HTMLDivElement>(null);
   const pemegangRef = useRef<HTMLDivElement>(null);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCities = async () => {
+      try {
+        // Menggunakan EMSIFA API yang mendukung CORS dan lebih handal
+        const provRes = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+        const provinces = await provRes.json(); 
+        
+        const regencyPromises = provinces.map((p: any) => 
+          fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${p.id}.json`).then(res => res.json())
+        );
+        
+        const regenciesData = await Promise.all(regencyPromises);
+        
+        // regenciesData mengembalikan array of arrays, kita ratakan dengan flatMap
+        const cities = regenciesData.flatMap((regencyArray: any[]) => regencyArray.map((r: any) => {
+          let name = r.name.toLowerCase();
+          name = name.replace('kabupaten ', '').replace('kota ', '');
+          return name.replace(/\b\w/g, (l: string) => l.toUpperCase());
+        }));
+
+        if (isMounted) {
+          setAllCities(Array.from(new Set(cities)).sort() as string[]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch cities", error);
+      }
+    };
+    fetchCities();
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -264,10 +357,39 @@ export const HKI: React.FC = () => {
       if (pemegangRef.current && !pemegangRef.current.contains(event.target as Node)) {
         setIsPemegangDropdownOpen(false);
       }
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setIsCityDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const citySuggestions = useMemo(() => {
+    if (!formTempatDiumumkan || !isCityDropdownOpen) return [];
+    return allCities
+      .filter(city => city.toLowerCase().includes(formTempatDiumumkan.toLowerCase()))
+      .slice(0, 8);
+  }, [formTempatDiumumkan, allCities, isCityDropdownOpen]);
+
+  const handleCityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isCityDropdownOpen || citySuggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedCityIndex(prev => (prev < citySuggestions.length - 1 ? prev + 1 : prev));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedCityIndex(prev => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === 'Enter') {
+      if (focusedCityIndex >= 0 && focusedCityIndex < citySuggestions.length) {
+        e.preventDefault();
+        setFormTempatDiumumkan(citySuggestions[focusedCityIndex]);
+        setIsCityDropdownOpen(false);
+      }
+    } else if (e.key === 'Escape') {
+      setIsCityDropdownOpen(false);
+    }
+  };
 
   const filteredHKI = useMemo(() => {
     return hkiList.filter(item => {
@@ -291,6 +413,7 @@ export const HKI: React.FC = () => {
     setTypeFilter('Semua Jenis');
     setYearFilter('Semua Tahun');
     setCurrentPage(1);
+    showToast('Filter telah direset.', 'info');
   };
 
   const openAddModal = () => {
@@ -332,6 +455,10 @@ export const HKI: React.FC = () => {
       return;
     }
 
+    const nidn = "1-402022-048";
+    const hasAnyFile = hkiFile || (isEditMode && hkiList.find(i => i.id === editingId)?.hkiFileName);
+    const finalStatus: 'Lengkap' | 'Sedang Berjalan' = hasAnyFile ? 'Lengkap' : 'Sedang Berjalan';
+
     const itemData: HKIItem = {
       id: isEditMode && editingId ? editingId : Math.random().toString(36).substring(7),
       title: formTitle,
@@ -343,8 +470,9 @@ export const HKI: React.FC = () => {
       pencipta: selectedPencipta,
       pemegang: selectedPemegang,
       hkiFile: hkiFile || undefined,
-      hkiFileName: hkiFile ? hkiFile.name : (isEditMode ? hkiList.find(i => i.id === editingId)?.hkiFileName : undefined),
-      year: new Date(formTanggalDiumumkan).getFullYear().toString()
+      hkiFileName: hkiFile ? generateFileName(formTitle, nidn, hkiFile) : (isEditMode ? hkiList.find(i => i.id === editingId)?.hkiFileName : undefined),
+      year: new Date(formTanggalDiumumkan).getFullYear().toString(),
+      status: finalStatus
     };
 
     if (isEditMode) {
@@ -497,6 +625,7 @@ export const HKI: React.FC = () => {
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Pencipta Utama</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Jenis Ciptaan</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Nomor Pencatatan</th>
+                      <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Status</th>
                       <th className="px-4 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Tahun</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Berkas</th>
                       <th className="px-8 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Aksi</th>
@@ -509,6 +638,7 @@ export const HKI: React.FC = () => {
                         <td className="px-6 py-6"><span className="text-[13px] font-bold text-slate-800 dark:text-neutral-200">{item.pencipta[0] || '-'}</span></td>
                         <td className="px-6 py-6"><span className="inline-block px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider rounded-lg border border-primary-100 dark:border-primary-900/30 whitespace-nowrap text-center leading-none">{item.jenisCiptaan}</span></td>
                         <td className="px-6 py-6 text-[13px] font-medium text-slate-600 dark:text-neutral-400 tabular-nums">{item.nomorPencatatan || '-'}</td>
+                        <td className="px-6 py-6 text-center"><span className={`inline-block px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-center leading-none ${getStatusStyles(item.status)}`}>{item.status}</span></td>
                         <td className="px-4 py-6 text-[13px] font-medium text-slate-500 dark:text-neutral-400">{item.year}</td>
                         <td className="px-6 py-6 text-center">
                           <div className="flex items-center justify-center gap-2">
@@ -532,6 +662,7 @@ export const HKI: React.FC = () => {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <span className="inline-block px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider rounded-lg border border-primary-100 dark:border-primary-900/30 whitespace-nowrap text-center leading-none">{item.jenisCiptaan}</span>
+                      <span className={`inline-block px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-center leading-none ${getStatusStyles(item.status)}`}>{item.status}</span>
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
                       <div className="flex gap-1.5">
@@ -645,9 +776,44 @@ export const HKI: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tempat Diumumkan Pertama Kali</label>
-                      <div className="relative">
+                      <div className="relative" ref={cityDropdownRef}>
                         <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input value={formTempatDiumumkan} onChange={e => setFormTempatDiumumkan(e.target.value)} placeholder="Masukkan kota/provinsi" className="w-full h-[52px] pl-12 pr-5 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl outline-none border border-transparent dark:text-white text-[14px] font-normal" />
+                        <input 
+                          value={formTempatDiumumkan} 
+                          onChange={e => {
+                            setFormTempatDiumumkan(e.target.value);
+                            setIsCityDropdownOpen(true);
+                            setFocusedCityIndex(-1);
+                          }} 
+                          onFocus={() => setIsCityDropdownOpen(true)}
+                          onKeyDown={handleCityKeyDown}
+                          placeholder="Masukkan kota/provinsi" 
+                          className="w-full h-[52px] pl-12 pr-5 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl outline-none border border-transparent focus:border-primary-600/30 dark:text-white text-[14px] font-normal transition-all" 
+                        />
+                        {isCityDropdownOpen && citySuggestions.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-[100]">
+                            <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                              {citySuggestions.map((city, idx) => (
+                                <button
+                                  key={city}
+                                  type="button"
+                                  onClick={() => {
+                                    setFormTempatDiumumkan(city);
+                                    setIsCityDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-5 py-3 text-[13px] font-medium transition-colors flex items-center gap-3 ${
+                                    focusedCityIndex === idx 
+                                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' 
+                                      : 'text-slate-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-white/5'
+                                  }`}
+                                >
+                                  <MapPin className="w-4 h-4 opacity-50" />
+                                  {city}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -744,6 +910,7 @@ export const HKI: React.FC = () => {
                     file={hkiFile} 
                     existingFileName={isEditMode ? hkiList.find(i => i.id === editingId)?.hkiFileName : undefined}
                     onFileSelect={setHkiFile} 
+                    onError={(msg) => showToast(msg, 'error')}
                   />
                 </div>
 
@@ -962,6 +1129,7 @@ const HKIDetailView: React.FC<{
               <div><label className="text-[10px] font-black text-slate-400 dark:text-neutral-600 uppercase tracking-widest block mb-2.5">Judul HKI</label><p className="text-[18px] md:text-[20px] font-bold text-slate-900 dark:text-white leading-snug">{detail.title}</p></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                 <DetailField label="Jenis Ciptaan" value={detail.jenisCiptaan} />
+                <DetailField label="Status" value={detail.status} />
                 <DetailField label="Nomor Permohonan" value={detail.nomorPermohonan || '-'} />
                 <DetailField label="Nomor Pencatatan" value={detail.nomorPencatatan || '-'} />
                 <DetailField label="Tempat Diumumkan" value={detail.tempatDiumumkan || '-'} />

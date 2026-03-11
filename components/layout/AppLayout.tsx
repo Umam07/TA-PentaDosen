@@ -8,6 +8,8 @@ import { Toast, ToastType } from './Toast';
 interface LayoutContextType {
   setGlobalBlur: (active: boolean) => void;
   showToast: (message: string, type: ToastType) => void;
+  profilePhoto: string | null;
+  setProfilePhoto: (photo: string | null) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -30,6 +32,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ onLogout, activeTab, setAc
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isGlobalBlurActive, setIsGlobalBlurActive] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean } | null>(null);
   const { setFocusDate } = useEvents();
 
@@ -55,6 +58,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ onLogout, activeTab, setAc
     };
   }, [isGlobalBlurActive, isProfileModalOpen]);
 
+  useEffect(() => {
+    showToast('Selamat datang di PentaDosen!', 'success');
+  }, [showToast]);
+
   const handleNotificationEventClick = (dateStr: string) => {
     setFocusDate(new Date(dateStr));
     setActiveTab('Kalender');
@@ -63,7 +70,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ onLogout, activeTab, setAc
   return (
     <LayoutContext.Provider value={{ 
       setGlobalBlur: setIsGlobalBlurActive,
-      showToast: showToast
+      showToast: showToast,
+      profilePhoto,
+      setProfilePhoto
     }}>
       <div className="min-h-screen bg-[#FBFBFD] dark:bg-black flex font-sans transition-colors duration-500 relative">
         

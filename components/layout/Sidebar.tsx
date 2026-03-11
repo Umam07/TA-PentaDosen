@@ -7,7 +7,9 @@ import {
   Calendar as CalendarIcon, 
   FlaskConical, 
   BookMarked, 
-  Lightbulb 
+  Lightbulb,
+  Library,
+  Users
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,13 +29,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
 }) => {
+  // Mock role for now, in real app this would come from auth context
+  const currentUserRole = 'super_admin'; 
+
   const sidebarItems = [
-    { name: 'Dashboard', icon: <LayoutDashboard className="w-[18px] h-[18px]" /> },
-    { name: 'Kalender', icon: <CalendarIcon className="w-[18px] h-[18px]" /> },
-    { name: 'Penelitian', icon: <FlaskConical className="w-[18px] h-[18px]" /> },
-    { name: 'Publikasi', icon: <BookMarked className="w-[18px] h-[18px]" /> },
-    { name: 'HKI', icon: <Lightbulb className="w-[18px] h-[18px]" /> },
+    { name: 'Dashboard', icon: <LayoutDashboard className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin', 'dosen'] },
+    { name: 'Kalender', icon: <CalendarIcon className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin', 'dosen'] },
+    { name: 'Penelitian', icon: <FlaskConical className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin', 'dosen'] },
+    { name: 'Publikasi', icon: <BookMarked className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin', 'dosen'] },
+    { name: 'HKI', icon: <Lightbulb className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin', 'dosen'] },
+    { name: 'Sumber Daya', icon: <Library className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin', 'dosen'] },
+    { name: 'Manajemen Pengguna', icon: <Users className="w-[18px] h-[18px]" />, roles: ['super_admin', 'admin'] },
   ];
+
+  const filteredSidebarItems = sidebarItems.filter(item => item.roles.includes(currentUserRole));
 
   const springConfig = {
     type: "spring" as const,
@@ -82,12 +91,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isMobile ? (
               <X className="w-5 h-5" />
             ) : (
-              <motion.div 
-                animate={{ rotate: isSidebarOpen ? 0 : 180 }}
-                transition={springConfig}
-              >
+              <div className={isSidebarOpen ? "" : "rotate-180"}>
                 <PanelLeftClose className="w-[18px] h-[18px] hidden md:block" />
-              </motion.div>
+              </div>
             )}
             
             {!isExpanded && !isMobile && (
@@ -116,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </AnimatePresence>
           
-          {sidebarItems.map((item) => {
+          {filteredSidebarItems.map((item) => {
             const isActive = activeTab === item.name;
             return (
               <button
@@ -135,10 +141,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 {/* Active Indicator Bar */}
                 {isActive && isExpanded && (
-                  <motion.div 
-                    layoutId="activeBar"
+                  <div 
                     className="absolute left-0 w-1 h-5 bg-primary-600 rounded-r-full"
-                    transition={springConfig}
                   />
                 )}
                 
@@ -190,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 shadow-sm transition-transform duration-500">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500/80 dark:bg-green-500 animate-pulse shrink-0"></div>
                   <p className="text-[10px] font-black tracking-tight whitespace-nowrap text-slate-500 dark:text-neutral-400">
-                    v2.1 <span className="mx-0.5 opacity-30">•</span> Stable
+                    v2.0 <span className="mx-0.5 opacity-30">•</span> Stable
                   </p>
                 </div>
               </div>

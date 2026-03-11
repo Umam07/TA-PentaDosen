@@ -13,7 +13,9 @@ import {
   Check,
   RotateCcw,
   Clock,
-  User
+  User,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { useLayout } from '../components/layout/AppLayout';
 
@@ -82,6 +84,46 @@ const useCountUp = (endValue: number, duration: number = 2000) => {
   return count;
 };
 
+const Sparkline = ({ data, color }: { data: number[], color: string }) => {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  
+  const width = 100;
+  const height = 30;
+  
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((val - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
+
+  return (
+    <svg width="100%" height="100%" viewBox={`0 -5 ${width} ${height + 10}`} preserveAspectRatio="none" className="overflow-visible">
+      <defs>
+        <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.2} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polygon points={areaPoints} fill={`url(#gradient-${color.replace('#', '')})`} />
+      <motion.polyline
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 1.5, ease: "easeInOut" }}
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 export const Dashboard: React.FC = () => {
   const { showToast } = useLayout();
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,6 +133,8 @@ export const Dashboard: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+  
+  const [timeFilter, setTimeFilter] = useState<string>('Semua Waktu');
   
   const totalResearchValue = useCountUp(218);
   const totalPubsValue = useCountUp(325);
@@ -150,14 +194,33 @@ export const Dashboard: React.FC = () => {
     setTooltip({ faculty, label, value, color, x: e.clientX, y: e.clientY });
   };
 
-  const FACULTY_CHART_DATA = [
-    { name: 'Kedokteran', research: 42, pub: 56, hki: 12 },
-    { name: 'Kedokteran Gigi', research: 28, pub: 34, hki: 8 },
-    { name: 'Teknologi Informasi', research: 55, pub: 78, hki: 24 },
-    { name: 'Ekonomi Bisnis', research: 35, pub: 45, hki: 15 },
-    { name: 'Hukum', research: 22, pub: 31, hki: 6 },
-    { name: 'Psikologi', research: 18, pub: 25, hki: 10 },
-  ];
+  const FACULTY_CHART_DATA = useMemo(() => {
+    const baseData = [
+      { name: 'Kedokteran', research: 42, pub: 56, hki: 12 },
+      { name: 'Kedokteran Gigi', research: 28, pub: 34, hki: 8 },
+      { name: 'Teknologi Informasi', research: 55, pub: 78, hki: 24 },
+      { name: 'Ekonomi Bisnis', research: 35, pub: 45, hki: 15 },
+      { name: 'Hukum', research: 22, pub: 31, hki: 6 },
+      { name: 'Psikologi', research: 18, pub: 25, hki: 10 },
+    ];
+
+    if (timeFilter === 'Tahun Ini') {
+      return baseData.map(d => ({
+        ...d,
+        research: Math.floor(d.research * 0.4),
+        pub: Math.floor(d.pub * 0.4),
+        hki: Math.floor(d.hki * 0.4),
+      }));
+    } else if (timeFilter === 'Tahun Lalu') {
+      return baseData.map(d => ({
+        ...d,
+        research: Math.floor(d.research * 0.6),
+        pub: Math.floor(d.pub * 0.6),
+        hki: Math.floor(d.hki * 0.6),
+      }));
+    }
+    return baseData;
+  }, [timeFilter]);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10 space-y-8 relative">
@@ -171,85 +234,149 @@ export const Dashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0">
         {[
-          { label: 'Total Penelitian', value: totalResearchValue, sub: 'Di seluruh fakultas', icon: <FlaskConical className="w-5 h-5" />, color: 'bg-blue-500/10 text-[#036aac]' },
-          { label: 'Total Publikasi', value: totalPubsValue, sub: 'Karya yang dipublikasikan', icon: <BookMarked className="w-5 h-5" />, color: 'bg-green-500/10 text-[#6a9256]' },
-          { label: 'Total HKI', value: totalHKIValue, sub: 'Hak Kekayaan Intelektual', icon: <Lightbulb className="w-5 h-5" />, color: 'bg-amber-500/10 text-[#e09a67]' },
+          { 
+            label: 'Total Penelitian', 
+            value: totalResearchValue, 
+            sub: 'Di seluruh fakultas', 
+            icon: <FlaskConical className="w-5 h-5" />, 
+            color: 'bg-blue-500/10 text-[#036aac]',
+            strokeColor: '#036aac',
+            trend: [150, 165, 180, 190, 218],
+            growth: 14.7
+          },
+          { 
+            label: 'Total Publikasi', 
+            value: totalPubsValue, 
+            sub: 'Karya yang dipublikasikan', 
+            icon: <BookMarked className="w-5 h-5" />, 
+            color: 'bg-green-500/10 text-[#6a9256]',
+            strokeColor: '#6a9256',
+            trend: [200, 220, 250, 290, 325],
+            growth: 12.1
+          },
+          { 
+            label: 'Total HKI', 
+            value: totalHKIValue, 
+            sub: 'Hak Kekayaan Intelektual', 
+            icon: <Lightbulb className="w-5 h-5" />, 
+            color: 'bg-amber-500/10 text-[#e09a67]',
+            strokeColor: '#e09a67',
+            trend: [40, 45, 55, 60, 75],
+            growth: 25.0
+          },
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white dark:bg-neutral-900/40 border border-slate-200 dark:border-white/5 p-6 md:p-8 rounded-[2rem] shadow-sm">
-            <div className="flex justify-between items-start">
+          <div key={idx} className="bg-white dark:bg-neutral-900/40 border border-slate-200 dark:border-white/5 p-6 md:p-8 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div className="flex justify-between items-start relative z-10">
               <div className="space-y-2">
                 <h3 className="text-[11px] font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest">{stat.label}</h3>
-                <span className="text-[28px] font-black text-slate-900 dark:text-white tracking-tighter leading-none">{stat.value}</span>
+                <div className="flex items-baseline gap-3">
+                  <span className="text-[28px] font-black text-slate-900 dark:text-white tracking-tighter leading-none">{stat.value}</span>
+                  <div className="flex flex-col">
+                    <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.growth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {stat.growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      <span>{stat.growth > 0 ? '+' : ''}{stat.growth}%</span>
+                    </div>
+                    <span className="text-[9px] font-medium text-slate-400 dark:text-neutral-500 mt-0.5">
+                      {stat.growth > 0 ? 'Lebih tinggi dari tahun lalu' : stat.growth < 0 ? 'Menurun dari tahun lalu' : 'Sama dengan tahun lalu'}
+                    </span>
+                  </div>
+                </div>
                 <p className="text-[12px] font-medium text-slate-400 dark:text-neutral-600">{stat.sub}</p>
               </div>
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.color}`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.color} shrink-0`}>
                 {stat.icon}
               </div>
+            </div>
+            
+            {/* Sparkline */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-40 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+              <Sparkline data={stat.trend} color={stat.strokeColor} />
             </div>
           </div>
         ))}
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 md:px-0">
-        {[
-          { label: 'Penelitian', key: 'research', max: 60, steps: [0, 15, 30, 45, 60] },
-          { label: 'Publikasi', key: 'pub', max: 80, steps: [0, 20, 40, 60, 80] },
-          { label: 'HKI', key: 'hki', max: 28, steps: [0, 7, 14, 21, 28] },
-        ].map((chart, idx) => (
-          <div key={idx} className="bg-white dark:bg-neutral-900/40 border border-slate-200 dark:border-white/5 p-6 md:p-8 rounded-[2rem] shadow-sm flex flex-col">
-            <div className="mb-8">
-              <h3 className="text-[15px] font-bold text-slate-900 dark:text-white">{chart.label} per Fakultas</h3>
-              <p className="text-[12px] font-medium text-slate-400 dark:text-neutral-500 tracking-tight">Jumlah tersegmentasi berdasarkan fakultas</p>
-            </div>
-            
-            <div className="h-64 flex items-end justify-between relative pl-8 pr-2 pt-10">
-              <div className="absolute inset-y-0 left-0 right-0 flex flex-col justify-between pointer-events-none pt-10 pb-0">
-                {[...chart.steps].reverse().map(step => (
-                  <div key={step} className="flex items-center h-0 w-full group">
-                    <span className="text-[10px] font-black text-slate-400 dark:text-neutral-700 w-8 pr-3 text-right tabular-nums">{step}</span>
-                    <div className="flex-1 h-px bg-slate-100 dark:bg-white/5"></div>
-                  </div>
-                ))}
-              </div>
-
-              {FACULTY_CHART_DATA.map((fac, facIdx) => {
-                const value = (fac as any)[chart.key];
-                const height = (value / chart.max) * 100;
-                const barColor = FACULTY_COLORS[fac.name] || '#4f46e5';
-                
-                return (
-                  <div 
-                    key={facIdx} 
-                    className="relative flex-1 flex flex-col items-center group h-full justify-end cursor-pointer"
-                    onMouseMove={(e) => handleMouseMove(e, fac.name, chart.label, value, barColor)}
-                    onMouseEnter={(e) => handleMouseMove(e, fac.name, chart.label, value, barColor)}
-                    onMouseLeave={() => setTooltip(null)}
-                    onClick={(e) => handleMouseMove(e, fac.name, chart.label, value, barColor)}
-                  >
-                    <motion.div 
-                      initial={{ height: 0 }}
-                      animate={{ height: `${height}%` }}
-                      transition={{ duration: 1, ease: "circOut", delay: facIdx * 0.05 }}
-                      className="w-[70%] rounded-t-lg transition-all duration-300 relative shadow-sm group-hover:shadow-lg group-hover:brightness-110"
-                      style={{ backgroundColor: barColor }}
-                    >
-                      <div className="absolute inset-x-0 -top-6 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[10px] font-black text-slate-900 dark:text-white tabular-nums">{value}</span>
-                      </div>
-                    </motion.div>
-                    <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-full text-center">
-                       <span className="text-[9px] font-black text-slate-400 dark:text-neutral-600 uppercase truncate px-1 block">
-                         {fac.name.substring(0, 3)}
-                       </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="h-6"></div>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-4 md:px-0">
+          <h2 className="text-[18px] font-bold text-slate-900 dark:text-white tracking-tight">Statistik Fakultas</h2>
+          <div className="flex items-center gap-2 bg-white dark:bg-neutral-900/40 border border-slate-200 dark:border-white/5 p-1 rounded-xl shadow-sm">
+            {['Semua Waktu', 'Tahun Ini', 'Tahun Lalu'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setTimeFilter(filter)}
+                className={`px-4 py-2 text-[12px] font-bold rounded-lg transition-all ${
+                  timeFilter === filter 
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 md:px-0">
+          {[
+            { label: 'Penelitian', key: 'research', max: 60, steps: [0, 15, 30, 45, 60] },
+            { label: 'Publikasi', key: 'pub', max: 80, steps: [0, 20, 40, 60, 80] },
+            { label: 'HKI', key: 'hki', max: 28, steps: [0, 7, 14, 21, 28] },
+          ].map((chart, idx) => (
+            <div key={idx} className="bg-white dark:bg-neutral-900/40 border border-slate-200 dark:border-white/5 p-6 md:p-8 rounded-[2rem] shadow-sm flex flex-col">
+              <div className="mb-8">
+                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white">{chart.label} per Fakultas</h3>
+                <p className="text-[12px] font-medium text-slate-400 dark:text-neutral-500 tracking-tight">Jumlah tersegmentasi berdasarkan fakultas</p>
+              </div>
+              
+              <div className="h-64 flex items-end justify-between relative pl-8 pr-2 pt-10">
+                <div className="absolute inset-y-0 left-0 right-0 flex flex-col justify-between pointer-events-none pt-10 pb-0">
+                  {[...chart.steps].reverse().map(step => (
+                    <div key={step} className="flex items-center h-0 w-full group">
+                      <span className="text-[10px] font-black text-slate-400 dark:text-neutral-700 w-8 pr-3 text-right tabular-nums">{step}</span>
+                      <div className="flex-1 h-px bg-slate-100 dark:bg-white/5"></div>
+                    </div>
+                  ))}
+                </div>
+
+                {FACULTY_CHART_DATA.map((fac, facIdx) => {
+                  const value = (fac as any)[chart.key];
+                  const height = (value / chart.max) * 100;
+                  const barColor = FACULTY_COLORS[fac.name] || '#4f46e5';
+                  
+                  return (
+                    <div 
+                      key={facIdx} 
+                      className="relative flex-1 flex flex-col items-center group h-full justify-end cursor-pointer"
+                      onMouseMove={(e) => handleMouseMove(e, fac.name, chart.label, value, barColor)}
+                      onMouseEnter={(e) => handleMouseMove(e, fac.name, chart.label, value, barColor)}
+                      onMouseLeave={() => setTooltip(null)}
+                      onClick={(e) => handleMouseMove(e, fac.name, chart.label, value, barColor)}
+                    >
+                      <motion.div 
+                        initial={{ height: 0 }}
+                        animate={{ height: `${height}%` }}
+                        transition={{ duration: 1, ease: "circOut", delay: facIdx * 0.05 }}
+                        className="w-[70%] rounded-t-lg transition-all duration-300 relative shadow-sm group-hover:shadow-lg group-hover:brightness-110"
+                        style={{ backgroundColor: barColor }}
+                      >
+                        <div className="absolute inset-x-0 -top-6 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-[10px] font-black text-slate-900 dark:text-white tabular-nums">{value}</span>
+                        </div>
+                      </motion.div>
+                      <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-full text-center">
+                         <span className="text-[9px] font-black text-slate-400 dark:text-neutral-600 uppercase truncate px-1 block">
+                           {fac.name.substring(0, 3)}
+                         </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="h-6"></div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Activity Log Section */}

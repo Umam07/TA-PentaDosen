@@ -17,6 +17,7 @@ export const Login: React.FC<LoginProps> = ({ onBack, onRegister, onForgotPasswo
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      alert('Selamat datang di PentaDosen');
       if (onSuccess) onSuccess();
     }, 1500); // Simulate login
   };

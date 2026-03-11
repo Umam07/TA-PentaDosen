@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Menu, X, BookOpen } from 'lucide-react';
+import { ViewType } from '../../App';
 
 interface NavbarProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
   // Menambahkan currentView agar footer tahu posisi halaman saat ini
-  onNavigate: (view: 'home' | 'login' | 'register' | 'forgot-password') => void;
-  currentView: 'home' | 'login' | 'register' | 'forgot-password';
+  onNavigate: (view: ViewType) => void;
+  currentView: ViewType;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ isDarkMode, toggleTheme, onNavigate, currentView }) => {

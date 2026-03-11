@@ -1,10 +1,10 @@
 import React from 'react';
 import { BookOpen, Instagram, Github, MapPin, Mail, Phone } from 'lucide-react';
+import { ViewType } from '../../App';
 
 interface FooterProps {
-  // Menambahkan currentView agar footer tahu posisi halaman saat ini
   currentView?: string; 
-  onNavigate?: (view: 'home' | 'login' | 'register' | 'forgot-password') => void;
+  onNavigate?: (view: ViewType) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, currentView = 'home' }) => {
@@ -139,10 +139,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, currentView = 'home'
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 dark:text-neutral-600 uppercase">Email</p>
                   <a 
-                    href="mailto:fortunateams3@gmail.com" 
+                    href="mailto:teamduk.ta@gmail.com" 
                     className="text-sm text-slate-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-white transition-colors block"
                   >
-                    fortunateams3@gmail.com
+                    teamduk.ta@gmail.com
                   </a>
                 </div>
               </div>
@@ -174,8 +174,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, currentView = 'home'
             </p>
           </div>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider transition-colors">Kebijakan Privasi</a>
-            <a href="#" className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider transition-colors">Syarat & Ketentuan</a>
+            <button 
+              onClick={() => onNavigate?.('privacy-policy')}
+              className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider transition-colors"
+            >
+              Kebijakan Privasi
+            </button>
+            <button 
+              onClick={() => onNavigate?.('terms-conditions')}
+              className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider transition-colors"
+            >
+              Syarat & Ketentuan
+            </button>
           </div>
         </div>
       </div>

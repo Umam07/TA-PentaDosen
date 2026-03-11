@@ -135,6 +135,21 @@ const formatISBN = (val: string) => {
   return formatted;
 };
 
+const generateFileName = (title: string, nidn: string, originalFile: File) => {
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}${mm}${dd}`;
+  
+  const cleanTitle = title.replace(/[/\\:*?"<>|]/g, '');
+  const cleanNidn = nidn.replace(/-/g, '');
+  const extension = originalFile.name.split('.').pop();
+  const extDot = extension ? `.${extension}` : '.pdf';
+  
+  return `${cleanTitle}_${cleanNidn}_${dateStr}${extDot}`;
+};
+
 /* --- COMPONENTS --- */
 
 interface ActionButtonProps {
@@ -192,7 +207,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
   const validateFile = (file: File): boolean => {
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!acceptedTypes.includes(extension)) {
-      setError(`Format file tidak didukung. Gunakan ${acceptedTypes.join(' atau ')}.`);
+      setError(`Hanya file format PDF yang diperbolehkan.`);
       return false;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -356,6 +371,7 @@ export const Publikasi: React.FC = () => {
     setYearFilter('Semua Tahun');
     setRowsPerPage(10);
     setCurrentPage(1);
+    showToast('Filter telah direset.', 'info');
   };
 
   const openAddModal = () => {
@@ -429,6 +445,7 @@ export const Publikasi: React.FC = () => {
       return;
     }
 
+    const nidn = "1-402022-048";
     if (isEditMode && editingId) {
       setPublicationList(prev => prev.map(p => p.id === editingId ? {
         ...p,
@@ -443,7 +460,7 @@ export const Publikasi: React.FC = () => {
         status: finalStatus,
         coAuthors: selectedAuthors,
         manuscriptFile: manuscriptFile || p.manuscriptFile,
-        manuscriptFileName: manuscriptFile ? manuscriptFile.name : p.manuscriptFileName
+        manuscriptFileName: manuscriptFile ? generateFileName(formTitle, nidn, manuscriptFile) : p.manuscriptFileName
       } : p));
       showToast('Publikasi diperbarui.', 'info');
     } else {
@@ -461,7 +478,7 @@ export const Publikasi: React.FC = () => {
         year: new Date().getFullYear().toString(),
         status: finalStatus,
         manuscriptFile: manuscriptFile || undefined,
-        manuscriptFileName: manuscriptFile?.name
+        manuscriptFileName: manuscriptFile ? generateFileName(formTitle, nidn, manuscriptFile) : undefined
       };
       setPublicationList([newItem, ...publicationList]);
       showToast('Publikasi ditambahkan.', 'success');
@@ -518,17 +535,23 @@ export const Publikasi: React.FC = () => {
   const handleTriggerFileUpload = (id: string) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.pdf,.docx';
+    input.accept = '.pdf';
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
+        const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+        if (extension !== '.pdf') {
+          showToast('Hanya file format PDF yang diperbolehkan.', 'error');
+          return;
+        }
         if (file.size > 10 * 1024 * 1024) {
           showToast('File terlalu besar. Maksimal 10 MB.', 'error');
           return;
         }
+        const nidn = "1-402022-048";
         setPublicationList(prev => prev.map(p => {
           if (p.id === id) {
-            return { ...p, manuscriptFile: file, manuscriptFileName: file.name, status: 'Lengkap' };
+            return { ...p, manuscriptFile: file, manuscriptFileName: generateFileName(p.title, nidn, file), status: 'Lengkap' };
           }
           return p;
         }));
@@ -636,8 +659,8 @@ export const Publikasi: React.FC = () => {
                       <th className="px-8 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Judul</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Ketua Penulis</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Penerbit</th>
-                      <th className="px-4 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Tahun</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Status</th>
+                      <th className="px-4 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Tahun</th>
                       <th className="px-6 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Berkas</th>
                       <th className="px-8 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Aksi</th>
                     </tr>
@@ -648,8 +671,8 @@ export const Publikasi: React.FC = () => {
                         <td className="px-8 py-6 max-w-xs"><p className="text-[14px] font-medium text-slate-900 dark:text-white leading-snug group-hover:text-primary-600 transition-colors">{item.title}</p></td>
                         <td className="px-6 py-6"><span className="text-[13px] font-bold text-slate-800 dark:text-neutral-200">{item.author}</span></td>
                         <td className="px-6 py-6"><span className="text-[13px] font-medium text-slate-600 dark:text-neutral-400">{item.publisher}</span></td>
-                        <td className="px-4 py-6 text-[13px] font-medium text-slate-500 dark:text-neutral-400">{item.year}</td>
                         <td className="px-6 py-6 text-center"><span className={`inline-block px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-center leading-none ${getStatusStyles(item.status)}`}>{item.status}</span></td>
+                        <td className="px-4 py-6 text-[13px] font-medium text-slate-500 dark:text-neutral-400">{item.year}</td>
                         <td className="px-6 py-6 text-center">
                           <div className="flex items-center justify-center gap-2">
                             {item.manuscriptFileName ? (
@@ -775,6 +798,21 @@ export const Publikasi: React.FC = () => {
                 <button type="button" onClick={closeAddModal} className="p-3 bg-slate-100 dark:bg-white/5 rounded-2xl text-slate-400 hover:text-slate-900"><X className="w-6 h-6" /></button>
               </div>
               <form onSubmit={handleSave} className="flex-1 overflow-y-auto px-8 md:px-12 py-10 custom-scrollbar space-y-12">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 flex items-center justify-center"><User className="w-4 h-4" /></div><h4 className="text-[16px] font-black text-slate-900 dark:text-white uppercase tracking-wider">Informasi Penulis Utama</h4></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 p-8 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-[2.5rem] opacity-60">
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Full Name</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><User className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">Dr. Jane Doe, M.T.</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">NIDN</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><Info className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">1-402022-048</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">NIP</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><Info className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">14020220-488888-88-88</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Academic Rank</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><Users className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">Dosen Tetap</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">University</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><Building2 className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">Universitas YARSI</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Faculty</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><Building2 className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">Fakultas Teknologi Informasi</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Study Program</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><GraduationCap className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">Teknik Informatika</span></div></div>
+                    <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">Email</label><div className="flex items-center gap-3 px-4 py-3 bg-white/50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl"><span className="text-slate-300"><FileText className="w-4 h-4" /></span><span className="text-[13px] font-normal text-slate-600 dark:text-neutral-400">jane.doe@fti.yarsi.ac.id</span></div></div>
+                    <div className="col-span-full pt-4 flex items-center gap-3 text-[12px] font-bold text-amber-600 bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10"><Info className="w-4 h-4 shrink-0" />Data bersifat baca-saja dan diambil otomatis dari profil Ketua Penulis.</div>
+                  </div>
+                </div>
+
                 <div className="space-y-6">
                   <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 flex items-center justify-center"><FileText className="w-4 h-4" /></div><h4 className="text-[16px] font-black text-slate-900 dark:text-white uppercase tracking-wider">Detail Publikasi</h4></div>
                   <div className="space-y-6">
@@ -928,8 +966,8 @@ export const Publikasi: React.FC = () => {
                       file={manuscriptFile} 
                       existingFileName={isEditMode ? publicationList.find(p => p.id === editingId)?.manuscriptFileName : undefined}
                       onFileSelect={setManuscriptFile} 
-                      acceptedTypes={['.pdf', '.docx']} 
-                      helperText="PDF atau DOCX (Max 10MB)" 
+                      acceptedTypes={['.pdf']} 
+                      helperText="Hanya PDF (Max 10MB)" 
                     />
                   </div>
                 </div>
@@ -1210,9 +1248,12 @@ const PublicationDetailView: React.FC<PublicationDetailViewProps> = ({ detail, o
                 <p className="text-[12px] font-bold text-primary-600 uppercase tracking-widest mt-2">Dosen Tetap</p>
               </div>
               <div className="space-y-5 pt-4">
+                <SidebarField label="NIDN" value="1-402022-048" icon={<Info className="w-3.5 h-3.5" />} />
+                <SidebarField label="NIP" value="14020220-488888-88-88" icon={<Info className="w-3.5 h-3.5" />} />
                 <SidebarField label="Universitas" value="Universitas YARSI" icon={<Building2 className="w-3.5 h-3.5" />} />
                 <SidebarField label="Fakultas" value="Teknologi Informasi" icon={<Briefcase className="w-3.5 h-3.5" />} />
                 <SidebarField label="Program Studi" value="Teknik Informatika" icon={<GraduationCap className="w-3.5 h-3.5" />} />
+                <SidebarField label="Email" value="jane.doe@fti.yarsi.ac.id" icon={<FileText className="w-3.5 h-3.5" />} />
               </div>
             </div>
           </div>
@@ -1245,14 +1286,83 @@ const PreviewModal: React.FC<{ fileName: string; fileUrl: string; fileType: stri
         className="relative bg-white dark:bg-[#0D0D0D] w-full md:w-[92vw] md:max-w-6xl h-full md:h-[90vh] md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-white/10"
       >
         <div className="px-6 py-4 md:px-10 md:py-6 border-b border-slate-100 dark:border-white/10 flex justify-between items-center shrink-0 bg-white/80 dark:bg-black/60 backdrop-blur-md sticky top-0 z-10">
-          <div className="flex items-center gap-4"><div className="w-11 h-11 bg-primary-600/10 text-primary-600 rounded-xl flex items-center justify-center shrink-0"><FileSearch className="w-5 h-5" /></div><div className="min-w-0"><h3 className="text-[16px] md:text-[19px] font-black text-slate-900 dark:text-white leading-tight truncate">{fileName}</h3><p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Quick Look Preview</p></div></div>
-          <button onClick={onClose} className="w-11 h-11 flex items-center justify-center bg-slate-100 dark:bg-white/10 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all active:scale-90"><X className="w-6 h-6" /></button>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-primary-600/10 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
+              <FileSearch className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-[16px] md:text-[19px] font-black text-slate-900 dark:text-white leading-tight truncate max-w-[200px] md:max-w-md">
+                {fileName}
+              </h3>
+              <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
+                Quick Look Preview
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+             {fileUrl && (
+               <button 
+                 onClick={() => { const a = document.createElement('a'); a.href = fileUrl; a.download = fileName; a.click(); }}
+                 className="hidden sm:flex h-11 px-6 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 font-bold rounded-xl items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
+               >
+                 <Download className="w-4 h-4" /> Unduh
+               </button>
+             )}
+             <button 
+               onClick={onClose} 
+               className="w-11 h-11 flex items-center justify-center bg-slate-100 dark:bg-white/10 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all active:scale-90"
+               aria-label="Tutup Pratinjau"
+             >
+               <X className="w-6 h-6" />
+             </button>
+          </div>
         </div>
         <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-black relative">
           {fileUrl && fileType === 'pdf' ? (
-            <div className="w-full h-full p-2 md:p-6 lg:p-8"><div className="w-full h-full rounded-2xl overflow-hidden bg-white shadow-2xl border border-black/5"><iframe src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1`} className="w-full h-full border-none" title="PDF Preview" /></div></div>
+            <div className="w-full h-full p-2 md:p-6 lg:p-8">
+              <div className="w-full h-full rounded-2xl overflow-hidden bg-white shadow-2xl border border-black/5">
+                <iframe 
+                  src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1`} 
+                  className="w-full h-full border-none" 
+                  title="PDF Document Viewer" 
+                />
+              </div>
+            </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center p-6"><div className="max-w-md w-full bg-white dark:bg-neutral-900/60 p-10 md:p-16 rounded-[3rem] text-center shadow-2xl border border-slate-100 dark:border-white/5 space-y-10 backdrop-blur-md"><div className="w-24 h-24 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner relative group"><FileText className="w-12 h-12 relative z-10" /></div><div className="space-y-4"><h4 className="text-[22px] md:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-tight">Pratinjau tidak tersedia</h4><p className="text-[15px] md:text-[17px] text-slate-500 dark:text-neutral-400 leading-relaxed font-medium">Format file ini saat ini tidak didukung for pratinjau langsung. Silakan unduh berkas for melihat konten.</p></div></div></div>
+            <div className="w-full h-full flex items-center justify-center p-6">
+              <div className="max-w-md w-full bg-white dark:bg-neutral-900/60 p-10 md:p-16 rounded-[3rem] text-center shadow-2xl border border-slate-100 dark:border-white/5 space-y-10 animate-in fade-in zoom-in-95 duration-700 backdrop-blur-md">
+                <div className="w-24 h-24 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner relative group">
+                  <div className="absolute inset-0 bg-primary-500/20 blur-2xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-1000 opacity-0 group-hover:opacity-100"></div>
+                  <FileText className="w-12 h-12 relative z-10" />
+                </div>
+                <div className="space-y-4">
+                  <h4 className="text-[22px] md:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    Pratinjau tidak tersedia
+                  </h4>
+                  <p className="text-[15px] md:text-[17px] text-slate-500 dark:text-neutral-400 leading-relaxed font-medium">
+                    {fileType === 'pdf' 
+                      ? 'Berkas demo ini tidak memiliki konten fisik untuk dipratinjau. Silakan unggah berkas PDF baru Anda untuk mengaktifkan fitur penampil dokumen.' 
+                      : 'Pratinjau langsung untuk format file .DOCX saat ini tidak didukung. Silakan unduh berkas untuk melihat konten secara lokal.'}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 pt-4">
+                  {fileUrl && (
+                    <button 
+                      onClick={() => { const a = document.createElement('a'); a.href = fileUrl; a.download = fileName; a.click(); }} 
+                      className="w-full py-5 bg-primary-600 text-white font-black rounded-2xl shadow-xl shadow-primary-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 hover:bg-primary-700"
+                    >
+                      <Download className="w-5 h-5" /> Unduh Berkas
+                    </button>
+                  )}
+                  <button 
+                    onClick={onClose}
+                    className="w-full py-5 bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-neutral-400 font-bold rounded-2xl active:scale-[0.98] transition-all"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </motion.div>

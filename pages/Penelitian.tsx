@@ -168,6 +168,20 @@ const terbilangRupiah = (amountStr: string): string => {
   return result ? `${result} rupiah` : '';
 };
 
+const generateResearchFileName = (title: string, nidn: string, file: File, type: 'proposal' | 'progress' | 'final'): string => {
+  const cleanTitle = title.replace(/[\/\\:*?"<>|]/g, '').trim();
+  const cleanNidn = nidn.replace(/-/g, '');
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const extension = file.name.split('.').pop() || 'pdf';
+  
+  if (type === 'progress') {
+    return `${cleanTitle}_Progress_${cleanNidn}_${date}.${extension}`;
+  } else if (type === 'final') {
+    return `${cleanTitle}_Final_${cleanNidn}_${date}.${extension}`;
+  }
+  return `${cleanTitle}_${cleanNidn}_${date}.${extension}`;
+};
+
 /* --- REUSABLE DRAG AND DROP COMPONENT --- */
 
 interface DragAndDropUploadProps {
@@ -196,7 +210,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
   const validateFile = (file: File): boolean => {
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!acceptedTypes.includes(extension)) {
-      setError(`Format file tidak didukung. Gunakan ${acceptedTypes.join(' atau ')}.`);
+      setError(`Hanya file format PDF yang diperbolehkan.`);
       return false;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -289,6 +303,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
 
 export const Penelitian: React.FC = () => {
   const { setGlobalBlur, showToast } = useLayout();
+  const nidn = "1-402022-048";
   const [researchList, setResearchList] = useState<ResearchItem[]>(MOCK_RESEARCH.map(r => ({ ...r, status: calculateStatus(r) })));
   const [searchQuery, setSearchQuery] = useState('');
   const [schemeFilter, setSchemeFilter] = useState('Semua Skema');
@@ -340,6 +355,7 @@ export const Penelitian: React.FC = () => {
     setYearFilter('Semua Tahun');
     setRowsPerPage(10);
     setCurrentPage(1);
+    showToast('Filter telah direset.', 'info');
   };
 
   const filteredResearch = useMemo(() => {
@@ -484,11 +500,11 @@ export const Penelitian: React.FC = () => {
             proposedAmount: `Rp ${formatIndonesianCurrency(cleanBudgetProposed) || '0'}`,
             sourceOfFunds: formSumberDana === 'Lainnya' ? formOtherSumberDana : formSumberDana,
             year: formYear,
-            proposalFileName: proposalFile ? proposalFile.name : item.proposalFileName,
+            proposalFileName: proposalFile ? generateResearchFileName(formTitle, nidn, proposalFile, 'proposal') : item.proposalFileName,
             proposalFile: proposalFile || item.proposalFile,
-            progressReport: progressFile ? progressFile.name : item.progressReport,
+            progressReport: progressFile ? generateResearchFileName(formTitle, nidn, progressFile, 'progress') : item.progressReport,
             progressFile: progressFile || item.progressFile,
-            finalReport: finalFile ? finalFile.name : item.finalReport,
+            finalReport: finalFile ? generateResearchFileName(formTitle, nidn, finalFile, 'final') : item.finalReport,
             finalFile: finalFile || item.finalFile
           };
           return { ...updated, status: calculateStatus(updated) } as ResearchItem;
@@ -507,10 +523,12 @@ export const Penelitian: React.FC = () => {
         proposedAmount: `Rp ${formatIndonesianCurrency(cleanBudgetProposed) || '0'}`,
         sourceOfFunds: formSumberDana === 'Lainnya' ? formOtherSumberDana : formSumberDana,
         year: new Date().getFullYear().toString(),
-        proposalFileName: proposalFile?.name,
+        proposalFileName: proposalFile ? generateResearchFileName(formTitle, nidn, proposalFile, 'proposal') : undefined,
         proposalFile: proposalFile || undefined,
-        progressReport: undefined,
-        finalReport: undefined
+        progressReport: progressFile ? generateResearchFileName(formTitle, nidn, progressFile, 'progress') : undefined,
+        progressFile: progressFile || undefined,
+        finalReport: finalFile ? generateResearchFileName(formTitle, nidn, finalFile, 'final') : undefined,
+        finalFile: finalFile || undefined
       };
       const newItem = { ...newItemPart, status: calculateStatus(newItemPart) } as ResearchItem;
       setResearchList([newItem, ...researchList]);
@@ -527,10 +545,10 @@ export const Penelitian: React.FC = () => {
   const handleReportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && reportUploadTarget) {
-      const allowedTypes = ['.pdf', '.docx'];
+      const allowedTypes = ['.pdf'];
       const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
       if (!allowedTypes.includes(extension)) {
-        showToast('Format file tidak didukung. Gunakan PDF or DOCX.', 'error');
+        showToast('Hanya file format PDF yang diperbolehkan.', 'error');
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
@@ -541,13 +559,13 @@ export const Penelitian: React.FC = () => {
         if (item.id === reportUploadTarget.id) {
           let updated = { ...item };
           if(reportUploadTarget.type === 'progress') {
-             updated.progressReport = file.name;
+             updated.progressReport = generateResearchFileName(item.title, nidn, file, 'progress');
              updated.progressFile = file;
           } else if(reportUploadTarget.type === 'final') {
-             updated.finalReport = file.name;
+             updated.finalReport = generateResearchFileName(item.title, nidn, file, 'final');
              updated.finalFile = file;
           } else if(reportUploadTarget.type === 'proposal') {
-             updated.proposalFileName = file.name;
+             updated.proposalFileName = generateResearchFileName(item.title, nidn, file, 'proposal');
              updated.proposalFile = file;
           }
           const finalItem = { ...updated, status: calculateStatus(updated) };
@@ -621,7 +639,7 @@ export const Penelitian: React.FC = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-      <input type="file" ref={reportInputRef} onChange={handleReportFileChange} accept=".pdf, .docx" className="hidden" />
+      <input type="file" ref={reportInputRef} onChange={handleReportFileChange} accept=".pdf" className="hidden" />
       
       <AnimatePresence>
         {previewData && (
@@ -725,7 +743,7 @@ export const Penelitian: React.FC = () => {
                     {paginatedResearch.length > 0 ? paginatedResearch.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors group">
                         <td className="px-8 py-6 max-sm"><p className="text-[14px] font-medium text-slate-900 dark:text-white leading-snug group-hover:text-primary-600 transition-colors">{item.title}</p></td>
-                        <td className="px-6 py-6"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 flex items-center justify-center text-[10px] font-black">{item.leadResearcher.split(' ').filter(n => !n.includes('.')).map(n => n[0]).join('').substring(0, 2)}</div><span className="text-[13px] font-bold text-slate-800 dark:text-neutral-200">{item.leadResearcher}</span></div></td>
+                        <td className="px-6 py-6"><div className="flex items-center gap-3"><span className="text-[13px] font-bold text-slate-800 dark:text-neutral-200">{item.leadResearcher}</span></div></td>
                         <td className="px-6 py-6"><span className="inline-block px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider rounded-lg whitespace-nowrap text-center leading-none">{item.scheme}</span></td>
                         <td className="px-6 py-6"><span className={`inline-block px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-center leading-none ${getStatusStyles(item.status)}`}>{item.status || 'Aktif'}</span></td>
                         <td className="px-4 py-6"><span className="text-[13px] font-medium text-slate-500 dark:text-neutral-400">{item.year}</span></td>
@@ -890,8 +908,8 @@ export const Penelitian: React.FC = () => {
                           file={proposalFile} 
                           existingFileName={existingFiles.proposal}
                           onFileSelect={setProposalFile} 
-                          acceptedTypes={['.pdf', '.docx']} 
-                          helperText="PDF atau DOCX (Max 10MB)" 
+                          acceptedTypes={['.pdf']} 
+                          helperText="Hanya PDF (Max 10MB)" 
                           onPreview={() => {
                             if (proposalFile) {
                               const url = URL.createObjectURL(proposalFile);
@@ -921,8 +939,8 @@ export const Penelitian: React.FC = () => {
                               file={progressFile} 
                               existingFileName={existingFiles.progress}
                               onFileSelect={setProgressFile} 
-                              acceptedTypes={['.pdf', '.docx']} 
-                              helperText="PDF atau DOCX (Max 10MB)" 
+                              acceptedTypes={['.pdf']} 
+                              helperText="Hanya PDF (Max 10MB)" 
                               onPreview={() => {
                                 if (progressFile) {
                                   const url = URL.createObjectURL(progressFile);
@@ -944,8 +962,8 @@ export const Penelitian: React.FC = () => {
                               file={finalFile} 
                               existingFileName={existingFiles.final}
                               onFileSelect={setFinalFile} 
-                              acceptedTypes={['.pdf', '.docx']} 
-                              helperText="PDF atau DOCX (Max 10MB)" 
+                              acceptedTypes={['.pdf']} 
+                              helperText="Hanya PDF (Max 10MB)" 
                               onPreview={() => {
                                 if (finalFile) {
                                   const url = URL.createObjectURL(finalFile);
@@ -1180,14 +1198,83 @@ const PreviewModal: React.FC<{ fileName: string; fileUrl: string; fileType: stri
         className="relative bg-white dark:bg-[#0D0D0D] w-full md:w-[92vw] md:max-w-6xl h-full md:h-[90vh] md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-white/10"
       >
         <div className="px-6 py-4 md:px-10 md:py-6 border-b border-slate-100 dark:border-white/10 flex justify-between items-center shrink-0 bg-white/80 dark:bg-black/60 backdrop-blur-md sticky top-0 z-10">
-          <div className="flex items-center gap-4"><div className="w-11 h-11 bg-primary-600/10 text-primary-600 rounded-xl flex items-center justify-center shrink-0"><FileSearch className="w-5 h-5" /></div><div className="min-w-0"><h3 className="text-[16px] md:text-[19px] font-black text-slate-900 dark:text-white leading-tight truncate">{fileName}</h3><p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Quick Look Preview</p></div></div>
-          <button onClick={onClose} className="w-11 h-11 flex items-center justify-center bg-slate-100 dark:bg-white/10 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all active:scale-90"><X className="w-6 h-6" /></button>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-primary-600/10 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
+              <FileSearch className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-[16px] md:text-[19px] font-black text-slate-900 dark:text-white leading-tight truncate max-w-[200px] md:max-w-md">
+                {fileName}
+              </h3>
+              <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
+                Quick Look Preview
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+             {fileUrl && (
+               <button 
+                 onClick={() => { const a = document.createElement('a'); a.href = fileUrl; a.download = fileName; a.click(); }}
+                 className="hidden sm:flex h-11 px-6 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 font-bold rounded-xl items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
+               >
+                 <Download className="w-4 h-4" /> Unduh
+               </button>
+             )}
+             <button 
+               onClick={onClose} 
+               className="w-11 h-11 flex items-center justify-center bg-slate-100 dark:bg-white/10 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all active:scale-90"
+               aria-label="Tutup Pratinjau"
+             >
+               <X className="w-6 h-6" />
+             </button>
+          </div>
         </div>
         <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-black relative">
           {fileUrl && fileType === 'pdf' ? (
-            <div className="w-full h-full p-2 md:p-6 lg:p-8"><div className="w-full h-full rounded-2xl overflow-hidden bg-white shadow-2xl border border-black/5"><iframe src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1`} className="w-full h-full border-none" title="PDF Preview" /></div></div>
+            <div className="w-full h-full p-2 md:p-6 lg:p-8">
+              <div className="w-full h-full rounded-2xl overflow-hidden bg-white shadow-2xl border border-black/5">
+                <iframe 
+                  src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1`} 
+                  className="w-full h-full border-none" 
+                  title="PDF Document Viewer" 
+                />
+              </div>
+            </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center p-6"><div className="max-w-md w-full bg-white dark:bg-neutral-900/60 p-10 md:p-16 rounded-[3rem] text-center shadow-2xl border border-slate-100 dark:border-white/5 space-y-10 backdrop-blur-md"><div className="w-24 h-24 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner relative group"><FileText className="w-12 h-12 relative z-10" /></div><div className="space-y-4"><h4 className="text-[22px] md:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-tight">Pratinjau tidak tersedia</h4><p className="text-[15px] md:text-[17px] text-slate-500 dark:text-neutral-400 leading-relaxed font-medium">Format file ini saat ini tidak didukung for pratinjau langsung. Silakan unduh berkas for melihat konten.</p></div></div></div>
+            <div className="w-full h-full flex items-center justify-center p-6">
+              <div className="max-w-md w-full bg-white dark:bg-neutral-900/60 p-10 md:p-16 rounded-[3rem] text-center shadow-2xl border border-slate-100 dark:border-white/5 space-y-10 animate-in fade-in zoom-in-95 duration-700 backdrop-blur-md">
+                <div className="w-24 h-24 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner relative group">
+                  <div className="absolute inset-0 bg-primary-500/20 blur-2xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-1000 opacity-0 group-hover:opacity-100"></div>
+                  <FileText className="w-12 h-12 relative z-10" />
+                </div>
+                <div className="space-y-4">
+                  <h4 className="text-[22px] md:text-[26px] font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    Pratinjau tidak tersedia
+                  </h4>
+                  <p className="text-[15px] md:text-[17px] text-slate-500 dark:text-neutral-400 leading-relaxed font-medium">
+                    {fileType === 'pdf' 
+                      ? 'Berkas demo ini tidak memiliki konten fisik untuk dipratinjau. Silakan unggah berkas PDF baru Anda untuk mengaktifkan fitur penampil dokumen.' 
+                      : 'Pratinjau langsung untuk format file .DOCX saat ini tidak didukung. Silakan unduh berkas untuk melihat konten secara lokal.'}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 pt-4">
+                  {fileUrl && (
+                    <button 
+                      onClick={() => { const a = document.createElement('a'); a.href = fileUrl; a.download = fileName; a.click(); }} 
+                      className="w-full py-5 bg-primary-600 text-white font-black rounded-2xl shadow-xl shadow-primary-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3 hover:bg-primary-700"
+                    >
+                      <Download className="w-5 h-5" /> Unduh Berkas
+                    </button>
+                  )}
+                  <button 
+                    onClick={onClose}
+                    className="w-full py-5 bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-neutral-400 font-bold rounded-2xl active:scale-[0.98] transition-all"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </motion.div>
